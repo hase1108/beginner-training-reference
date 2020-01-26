@@ -1,2 +1,9 @@
 # beginner-training-reference
-Reference texts for programing beginner. (Language = Java)
+
+## リポジトリの概要
+
+プログラミング初学者向けのリファレンスガイドの作成を行うリポジトリ
+言語は基本的にJavaを使用する。
+プログラミングの動作の基本から、実際の現場での一般的な作業や流れまでを解説する。
+リファレンスガイド自体はAsciiDocを利用して書く。
+
