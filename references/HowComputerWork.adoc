@@ -1,0 +1,15 @@
+:toclevels: 5
+:sectnums:
+
+[HowComputerWork]
+= コンピュータの仕組み
+
+== Overview
+
+== コンピュータの構成要素
+
+== コンピュータの種類
+
+== OS
+
+== データ表現
