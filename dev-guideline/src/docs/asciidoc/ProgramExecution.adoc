@@ -1,0 +1,24 @@
+:toclevels: 5
+:sectnums:
+
+[ProgramExecution]
+= プログラムの実行
+
+[[ProgramExecution_Overview]]
+== Overview
+本節では、記述したプログラムコードがどのように実行されるのかを解説する。  +
+
+
+[[ProgramExecution_NativeCode]]
+== ネイティブコード
+
+[[ProgramExecution_Language]]
+== 言語の種類
+
+
+[[ProgramExecution_Language_Compiler]]
+=== コンパイラ言語
+
+[[ProgramExecution_Language_Interpreter]]
+=== スクリプト言語
+
