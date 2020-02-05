@@ -1,3 +1,5 @@
+include::include_all.adoc[]
+
 :toclevels: 5
 :sectnums:
 
@@ -59,7 +61,7 @@ PCの性能上昇に伴い区別は曖昧である
 コンピュータは様々なハードから構成されている。 +
 非常に大雑把ではあるが、コンピュータの全体構成と各種処理の流れを以下の図に示す。
 
-//図を挿入する
+image::ComputerComponents/computer_components.png[]
 
 
 各装置の概要を以下に示す。
@@ -103,7 +105,8 @@ PCの性能上昇に伴い区別は曖昧である
 コンピュータは上記ハードウェアで構成されるが、ハードウェアを制御/操作するソフトウェアがなければ動作しない。
 ソフトウェアの構成とハードウェアとの連携方法を以下の図に示す。
 
-//図を置く
+image::ComputerComponents/software_components.png[]
+
 
 各ソフトウェアの概要を以下に示す。
 
