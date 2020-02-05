@@ -92,6 +92,54 @@
                             <md5>a623c6aaf9ba3c992ecd10698586da62</md5>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>install-font-RobotoMono-Bold-Italic</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${pdf.cjk.kaigen.fonts.download.uri}/RobotoMono-BoldItalic.ttf</url>
+                            <outputDirectory>${pdf.cjk.kaigen.download.dir}/fonts</outputDirectory>
+                            <md5>28c34883fca976c0d408c1a0a8596ece</md5>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-font-RobotoMono-Bold</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${pdf.cjk.kaigen.fonts.download.uri}/RobotoMono-Bold.ttf</url>
+                            <outputDirectory>${pdf.cjk.kaigen.download.dir}/fonts</outputDirectory>
+                            <md5>cf661842dcc7e1cc63147893ea8f47e8</md5>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-font-RobotoMono-Italic</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${pdf.cjk.kaigen.fonts.download.uri}/RobotoMono-Italic.ttf</url>
+                            <outputDirectory>${pdf.cjk.kaigen.download.dir}/fonts</outputDirectory>
+                            <md5>7b4c715c7e2b43e8f001c601f4fecbb0</md5>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-font-RobotoMono-Regular</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${pdf.cjk.kaigen.fonts.download.uri}/RobotoMono-Regular.ttf</url>
+                            <outputDirectory>${pdf.cjk.kaigen.download.dir}/fonts</outputDirectory>
+                            <md5>e2642a6882ef2432ee9ac442691a4384</md5>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -140,45 +188,6 @@
                         <configuration>
                             <backend>html5</backend>
                             <sourceHighlighter>coderay</sourceHighlighter>
-                            <!--
-                            Scenarios for linking vs embedding assets:
-                            Link to both stylesheets and images::
-                              - don't set embedAssets option
-                              - set linkcss attribute to true
-                              - set imagesdir attribute to path relative to AsciiDoc source file
-                              <attributes>
-                                  <linkcss>true</linkcss>
-                                  <imagesdir>./images</imagesdir>
-                              </attributes>
-                            Embed stylesheets and images::
-                            
-                              - set embedAssets option to true
-                              - don't set linkcss attribute
-                              - set imagesdir attribute to path relative to project root
-                              <embedAssets>true</embedAssets>
-                              <attributes>
-                                  <imagesdir>src/docs/asciidoc/images</imagesdir>
-                              </attributes>
-                            Link to stylesheets but embed images::
-                            
-                              - set embedAssets option to true
-                              - set linkcss attribute to true
-                              - set imagesdir attribute to path relative to project root
-                              <embedAssets>true</embedAssets>
-                              <attributes>
-                                  <linkcss>true</linkcss>
-                                  <imagesdir>src/docs/asciidoc/images</imagesdir>
-                              </attributes>
-                            Embed stylesheets but link images (default)::
-                            
-                              - don't set embedAssets option
-                              - don't set linkcss attribute
-                              - set imagesdir attribute to path relative to AsciiDoc source file
-                              <attributes>
-                                  <imagesdir>./images</imagesdir>
-                              </attributes>
-                            IMPORTANT: When you enable image embedding, you must qualify the path the the imagesdir, as shown above.
-                            -->
                             <attributes>
                                 <imagesdir>./images</imagesdir>
                                 <toc>left</toc>
@@ -220,37 +229,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--
-            NOTE: Use the maven-resources-plugin if there are assets outside the AsciiDoc source folder
-                  that need to be copied to the generated-docs. The Maven plugin automatically copies
-                  non-AsciiDoc files in the AsciiDoc source folder to generated-docs.
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>copy-asciidoc-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/docs/resources</directory>
-                                    <includes>
-                                        <include>**/*.jpg</include>
-                                        <include>**/*.png</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                            <outputDirectory>target/generated-docs</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
         </plugins>
     </build>
 </project>
