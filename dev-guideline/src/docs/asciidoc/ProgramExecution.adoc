@@ -17,11 +17,20 @@
 人間が解釈しやすい高水準言語に対して、ネイティブコードに近いものを低水準言語と呼ぶ。 +
 以下に概要図を示す。  +
 
-[[ProgramExecution_Code_NativeCode]]
-=== ネイティブコード
+[[ProgramExecution_Code_Low-LevelLang]]
+=== 低水準言語
+前述したように、機械が解釈できる二進数で書かれたネイティブコード、またネイティブコードに近い形式であるアセンブリ言語などは低水準言語と呼ばれる。  +
+実務的にはアセンブリ言語はともかくネイティブコードを直接取り扱うことはないと思われる。
 
-[[ProgramExecution_Code_Language]]
-=== 言語の種類
+[[ProgramExecution_Code_Low-LevelLang_Assembly]]
+==== アセンブリ言語
+
+
+[[ProgramExecution_Code_Low-LevelLang_Native]]
+==== ネイティブコード
+
+[[ProgramExecution_Code_High-LevelLang]]
+=== 高水準言語
 
 [[ProgramExecution_Code_Language_Compiler]]
 ==== コンパイラ言語
@@ -32,5 +41,7 @@
 [[ProgramExecution_Code_Language_Others]]
 ==== その他
 
-== シェル
+== プログラムの起動
+
+
 
