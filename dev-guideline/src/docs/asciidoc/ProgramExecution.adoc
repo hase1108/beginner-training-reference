@@ -8,18 +8,29 @@
 == Overview
 本節では、記述したプログラムコードがどのように実行されるのかを解説する。  +
 
+[[ProgramExecution_Code]]
+== コード
 
-[[ProgramExecution_NativeCode]]
-== ネイティブコード
+ある特定のルールに従って記述され、コンピュータに解釈させる、もしくは何らかの動作を実行させることを目的として作成されたデータをコード(プログラムコード/ソースコード)と呼ぶ。  +
+前節で述べたように、ハードウェアの領域では二進数で取り扱われるため、基本的には最終的に後述のネイティブコードでハードウェアに伝える必要がある。  +
+当然二進数なため人間が直接解釈/記述するのは非常に難しい。そのため、通常は人間が解釈しやすい高水準言語を読み書きし、様々なツールを利用してネイティブコードに変換する方式をとる。 +
+人間が解釈しやすい高水準言語に対して、ネイティブコードに近いものを低水準言語と呼ぶ。 +
+以下に概要図を示す。  +
 
-[[ProgramExecution_Language]]
-== 言語の種類
+[[ProgramExecution_Code_NativeCode]]
+=== ネイティブコード
 
-[[ProgramExecution_Language_Compiler]]
-=== コンパイラ言語
+[[ProgramExecution_Code_Language]]
+=== 言語の種類
 
-[[ProgramExecution_Language_Interpreter]]
-=== スクリプト言語
+[[ProgramExecution_Code_Language_Compiler]]
+==== コンパイラ言語
+
+[[ProgramExecution_Code_Language_Interpreter]]
+==== スクリプト言語
+
+[[ProgramExecution_Code_Language_Others]]
+==== その他
 
 == シェル
 
