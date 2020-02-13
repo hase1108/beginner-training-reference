@@ -61,7 +61,7 @@ C言語ではれば``gcc``コマンドであり、Go言語であれば``go build
 また、言語によっては直接ネイティブコードに変換するのではなく、アセンブリ言語に変換してネイティブコードに変換するのはアセンブラに任せるものや、何らかの中間言語に変換してさらに実行時にコンパイルする言語なども存在する。  +
 
 [[ProgramExecution_Code_Language_Interpreter]]
-==== スクリプト言語
+==== インタプリンタ言語
 
 [[ProgramExecution_Code_Language_Others]]
 ==== その他
