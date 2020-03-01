@@ -3,21 +3,20 @@ include::include_all.adoc[]
 :toclevels: 5
 :sectnums:
 
-[HowComputerWork]
-= コンピュータの構造
+[HowComputersWork]
+= コンピュータの仕組み
 
-[[HowComputerWork_Overview]]
+[[HowComputersWork_Overview]]
 == Overview
 システム開発の多くの作業はコンピュータ上で行われる。 +
 本節ではそのコンピュータがどういった構造で動作するか概要を解説する。 +
 
-[[HowComputerWork_Type]]
+[[HowComputersWork_Type]]
 == コンピュータの種類
 大きなくくりでコンピュータと言った場合、構造や用途によっていくつかの種類が存在する。 +
-実務上PC、サーバの事がわかっていれば問題ないが、基礎知識として以下にコンピュータの種類を示す。 +
-なお、PCをサーバのように使用するなど区別が明確に決まっていない分類がある。 +
+実務上PC、サーバの事がわかっていれば問題ないが、基礎知識として以下にコンピュータの種類を示す。 
 
-[[HowComputerWork_Type_Table]]
+[[HowComputersWork_Type_Table]]
 .コンピュータの種類
 [cols="30,70", options="header"]
 |===
@@ -51,18 +50,19 @@ PCの性能上昇に伴い両者の区別は曖昧である
 |工業機械の制御などに用いられる専用のコンピュータ
 |===
 
-[[HowComputerWork_Component]]
+[[HowComputersWork_Component]]
 == コンピュータの構成要素
 
 コンピュータを構成する基本的な要素をハードウェアとソフトウェアに分けて概要を解説する。
 
-[[HowComputerWork_Component_Overview]]
+[[HowComputersWork_Component_Overview]]
 === ハードウェア
 コンピュータは様々なハードから構成されている。 +
 非常に大雑把ではあるが、コンピュータの全体構成と各種処理の流れを以下の図に示す。
 
-image::ComputerComponents/computer_components.png[]
-
+.コンピュータの構成
+[#computer-components]
+image::ComputerComponents/computer_components.png[コンピュータの構成,300,200]
 
 各装置の概要を以下に示す。
 
@@ -98,17 +98,32 @@ image::ComputerComponents/computer_components.png[]
 
 システム開発の現場では、直接上記の構成を意識することはない。  +
 ただし、CPUやメモリのスペックなどはシステムの安定性や性能に直結するため、設計や性能試験で考慮する必要がある。  +
-詳細は<<>>を参照のこと
+詳細は<<>>を参照のこと。  +
+Windowsを利用している場合は、コマンドプロンプトから``systeminfo``コマンドを実行したり、``Windows管理ツール→システム情報``からハードウェアの構成などを確認することができる。
 
-[[HowComputerWork_Component_Software]]
+.systeminfoコマンドの実行結果
+[#systeminfo-command]
+image::ComputerComponents/systeminfo.png[systeminfo,300,200]
+
+.システム情報
+[#systeminfo-gui]
+image::ComputerComponents/systeminfo-gui.png[systeminfo-gui,300,200]
+
+また、Linuxでは``HWINFO``を利用することで詳細な情報を取得することができる。
+
+.HWINFO
+[#hwinfo]
+image::ComputerComponents/hwinfo.png[hwinfo,300,200]
+
+[[HowComputersWork_Component_Software]]
 === ソフトウェア
-コンピュータは上記ハードウェアで構成されるが、ハードウェアを制御/操作するソフトウェアがなければ動作しない。
-ソフトウェアの構成とハードウェアとの連携方法を以下の図に示す。
+コンピュータは前述したハードウェアで構成されるが、それらのハードウェアを制御/操作するソフトウェアが必要になる。  +
+一般的にソフトウェアは階層構造になっており、ハードウェアを直接制御する**カーネル**から、ユーザが直接操作する**アプリケーションソフトウェア**などが存在する。  +
+一般的なソフトウェアの階層構造とハードウェアとの連携方法を以下の図に示す。
 
 image::ComputerComponents/software_components.png[]
 
-
-各ソフトウェアの概要を以下に示す。
+各ソフトウェアの階層の概要を以下に示す。
 
 .ソフトウェアの種類
 [cols="30,20,50", options="header"]
@@ -135,9 +150,9 @@ OSはカーネルを内包し、その他にシェルやデバイスドライバ
 |===
 
 
-[[HowComputerWork_Component_OS]]
+[[HowComputersWork_Component_OS]]
 ==== OS
-前述したように、OSはハードウェアを制御するカーネルを核とし、ユーザにGUI環境を提供する機能や、カーネルとやり取りを行う窓口となるシェル、その他色々なソフトウェアをひとまとめにしたもので成り立っている。  +
+OSはハードウェアを制御するカーネルを核とし、ユーザにGUI環境を提供する機能や、カーネルとやり取りを行う窓口となるシェル、その他色々なソフトウェアをひとまとめにしたもので成り立っている。  +
 当然その構成によって様々な種類のOSが存在し、機能に差異があることから、システム開発の現場では開発環境および動作環境がどのOSになるかを意識する必要がある。  +
 どういった種類のOSがあるか、以下にピックアップして示す。  +
 なお、分類については諸説あるため、大まかな分類であると認識していただきたい。
@@ -151,7 +166,7 @@ OSはカーネルを内包し、その他にシェルやデバイスドライバ
 |Windows
 |世界のデスクトップPCで大きなシェアを持つOS  +
 動作環境はともかく、開発環境はWindowsであることが多い傾向にある  +
-後述するMac/Unix/Linux系のOSとはカーネルのレイヤで大きく異なるため、Dockerがデフォルトではうまく動作しないなど開発するにあたり障害となる場合もある
+後述するMac/Unix/Linux系のOSとはカーネル自体が大きく異なるため、Dockerがデフォルトではうまく動作しないなど開発するにあたり障害となる場合もある
 
 |Mac
 |後述するUnix系OSから派生して作られたOS  +
