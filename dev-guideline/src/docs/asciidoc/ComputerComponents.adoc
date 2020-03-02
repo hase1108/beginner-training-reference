@@ -62,7 +62,7 @@ PCの性能上昇に伴い両者の区別は曖昧である
 
 .コンピュータの構成
 [#computer-components]
-image::ComputerComponents/computer_components.png[コンピュータの構成,300,200]
+image::ComputerComponents/computer_components.png[コンピュータの構成]
 
 各装置の概要を以下に示す。
 
