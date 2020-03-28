@@ -470,8 +470,33 @@ www.xxx.yyy.zzz.co.jp
 DNSは文字列とIPを紐づける仕組みであるが、その紐づけたデータは``DNSサーバ``が保持している。 +
 また、一つのDNSサーバが全ての紐づけデータを持って都度検索するのは効率が悪いため、通常複数のサーバで共同して紐づけデータを取得する仕組みになっている。
 
-[[HowInterWorks_Communication_Protcol_TLSSSL]]
-===== TLS/SSL
+[[HowInterWorks_Communication_Protcol_SSLTLS]]
+===== SSL/TLS
+ネットワークを使用して通信する際、何も行わない場合は平文で行われている場合が多い。 +
+HTTPなどを使用して通信する場合、通信経路には中継などを行うハブやルータなどが含まれているため、悪意を持った機器が接続されている場合は通信内容を盗み見られてしまう場合がある。 +
+そこで通信内容を暗号化する仕組みを**SSL/TLS**と呼ぶ。 +
+SSL/TLSはサーバ証明書に付与した公開鍵暗号化方式を用いて暗号化される。 +
+概要を以下に示す。
+
+.SSL/TLS概要1
+[#SSL/TLS1]
+image::HowInternetWorks/ssltls1.png[SSL/TLS概要1]
+
+.SSL/TLS概要2
+[#SSL/TLS1]
+image::HowInternetWorks/ssltls1.png[SSL/TLS概要2]
+
+.SSL/TLS概要3
+[#SSL/TLS1]
+image::HowInternetWorks/ssltls1.png[SSL/TLS概要3]
+
+.SSL/TLS概要4
+[#SSL/TLS1]
+image::HowInternetWorks/ssltls1.png[SSL/TLS概要4]
+
+なお、SSL/TLSは暗号化のみを行うため、単独で使用することはない。 +
+通常他のアプリケーション層のプロトコルと組み合わせて利用する。 +
+例えば、HTTPと組あわせて**HTTPS**としたり、MTPと組み合わせて**SMTP**としたりする。
 
 [[HowInterWorks_Communication_Protcol_SSH]]
 ===== SSH
