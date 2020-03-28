@@ -484,19 +484,30 @@ image::HowInternetWorks/ssltls1.png[SSL/TLS概要1]
 
 .SSL/TLS概要2
 [#SSL/TLS1]
-image::HowInternetWorks/ssltls1.png[SSL/TLS概要2]
+image::HowInternetWorks/ssltls2.png[SSL/TLS概要2]
 
 .SSL/TLS概要3
 [#SSL/TLS1]
-image::HowInternetWorks/ssltls1.png[SSL/TLS概要3]
+image::HowInternetWorks/ssltls3.png[SSL/TLS概要3]
 
 .SSL/TLS概要4
 [#SSL/TLS1]
-image::HowInternetWorks/ssltls1.png[SSL/TLS概要4]
+image::HowInternetWorks/ssltls4.png[SSL/TLS概要4]
 
 なお、SSL/TLSは暗号化のみを行うため、単独で使用することはない。 +
 通常他のアプリケーション層のプロトコルと組み合わせて利用する。 +
 例えば、HTTPと組あわせて**HTTPS**としたり、MTPと組み合わせて**SMTP**としたりする。
 
 [[HowInterWorks_Communication_Protcol_SSH]]
-===== SSH
+===== SSH(Secure Shell)
+HTTPやFTPでは、ネットワークで接続された機器に対して情報を要求することはできるが、機器自身を操作することはできない。 +
+ネットワーク越しに遠隔地にあるサーバなどに接続し、サーバを操作することは頻繁にあるため、**SSH**というプロトコルを使用する。 +
+SSHはサーバに接続するにあたり、パスワード、もしくは公開鍵暗号化方式を使用して接続する。 +
+公開鍵を利用する場合は、公開鍵と秘密鍵をあらかじめ生成し、それを用いて暗号化した通信を行う。 +
+
+通常、sshを用いて通信を行い対場合は、LinuxであればデフォルトでSSHコマンドが利用できるが、Windowsの場合はOpenSSHなどのコマンドラインアプリケーションをダウンロードして利用するか、TeraTermなどのアプリケーションを利用することが多い。 +
+bashを用いてAWSのEC2インスタンスにSSH接続をすると以下のようになる。 +
+
+.ssh接続
+[#ssh]
+image::HowInternetWorks/ssh.png[SSL/TLS概要4]
