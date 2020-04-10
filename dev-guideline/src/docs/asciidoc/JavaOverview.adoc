@@ -70,7 +70,26 @@ image::JavaOverview/OpenJDK.png[OpenJDK]
 [[JavaOverview_WhatisJava_JavaComunity]]
 === Javaコミュニティ
 
-Javaはその歴史的経緯から、Oracle(旧Sun MicroSystems)と繋がりが深いが、Javaの開発自体はOracleやIBMなどの企業や http://www.java-users.jp/[日本Javaユーザグループ]などに代表される各ユーザーグループ、また各個人による協力によって成立している。 +
+Javaはその歴史的経緯から、Oracle(旧Sun MicroSystems)と繋がりが深いが、Javaの開発自体はオープンであり、OracleやIBMなどの企業や http://www.java-users.jp/[日本Javaユーザグループ]などに代表される各ユーザーグループ、また個人による協力によって成立している。 +
+Javaの開発としては<<_JavaOverview_WhatisJava_JavaEnvironment,Javaの実行/開発環境>>で述べたようにOpenJDKの実装やバグフィックスを行うが、具体的には下記のような手順を踏む。 +
+
+.Java開発プロセス
+[#JavaDevProcess]
+image::JavaOverview/JavaDevelop.png[Java開発プロセス]
+
+Javaの機能やバージョンを制定するプロセスを**JCP(Java Comunity Process)**と呼ぶ。 +
+JCPではJavaの仕様を文章化した**JSRs(Java Specification Requests)**を作成、レビューを行い、最終的に**Java SE**として仕様を確定させる。 +
+Java SEの**RI(参照実装)**としてOpenJDKが実装される。 +
+なお、OpenJDKの機能が十分であることは、**TCK(Technology Compatibility Kit)**によって担保される。 +
+OpenJDK自体の拡張機能などは**JEP(JDK Enhancement Proposal)**によって管理され、さらには**JBS(Java Bug System)**でバグを管理している。 +
+
+JCPを構成する人員としては関連する各企業やJavaユーザーグループなどで構成される**JCP EC(Executive Committee)**が最終的な責任などを負うが、当然個人も開発に参加することができる。 +
+以下に関連するリンクを記載する。 +
+
+- https://www.jcp.org/en/home/index[JCP]
+- https://hg.openjdk.java.net/[OpenJDKのリポジトリ]
+- https://bugs.openjdk.java.net/secure/Dashboard.jspa[JBS]
+- http://openjdk.java.net/jeps/0[JEP]
 
 == Javaの実行
 
