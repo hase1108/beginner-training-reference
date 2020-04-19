@@ -1,0 +1,80 @@
+include::include_all.adoc[]
+
+:toclevels: 5
+:sectnums:
+
+[JavaTutorial]
+= Javaのチュートリアル
+
+[[JavaTutorial_Overview]]
+== Overview
+本章ではJavaによるプログラミングの簡単なチュートリアルを行う。 +
+Javaの仕様以外の事柄についても適宜説明を指しはさむ。 +
+
+[[JavaTutorial_Environment]]
+== 実行環境を整える
+まず初めに個人のマシンでJavaを実行/開発可能な状態にする。 +
+適宜シェルなどを用いてプログラムやコマンドを実行することで動作可能であることを確認する。 +
+なお、本リファレンスはwindows10での開発を想定しているため、Linuxなど他のOSの場合は適宜読み替えること。
+
+[[JavaTutorial_Environment_OpenJDK]]
+=== Open JDKをインストールする
+<<JavaOverview.adoc#JavaOverview_Overview,Javaの概要>>で述べたように、Java言語で記述されたプログラムを実行するにあたり、JDKをインストールして実行環境/開発環境を整える必要がある。 +
+本節ではJDKのディストリビューションの**Oracle Open JDK 11**を用いる。  
+Open JDKの最新バージョンは14だが、14はいわゆるnon-LTSであるためサポート期間が短く、2020年9月でサポートが終了してしまうため、LTSである11を用いる。(11は2023年9月までサポート対象内) +
+Java11以降に追加されたSwitch文の拡張や複数行の文字列の記述方式の変更などは以降のリファレンスでは用いない。+
+
+Open JDKのバイナリは http://jdk.java.net/java-se-ri/11[jdk.java.net]から対応するOSのバイナリを選択してZIPファイルをダウンロードする。 +
+ダウンロードしたファイルは適当な場所に展開しておく。 +
+展開した状態のフォルダ構成を以下に示す。 +
+
+.OpenJDKフォルダ構成
+[#UnzippedOpenJDK]
+image::JavaTutorial/UnzippedJDK.png[UnzippedOpenJDK]
+
+Javaの実行/開発環境として必要な機能は概ね上記フォルダに収まっている。 +
+特に**binフォルダ**配下には、<<JavaOverview.adoc#JavaOverview_Execution,Javaの実行>>で示したようなJavaのコンパイルコマンドである**javacコマンド**で実行される**javac.exe**や**javaコマンド**で起動される**java.exe**などが配置されている。 +
+
+.Binフォルダ
+[#BinFolder]
+image::JavaTutorial/BinFolder.png[BinFolder]
+
+現状でもjavaが起動できることをとりあえず確認する。 +
+まず**コマンドプロンプト**もしくは**シェル**を起動し、コマンドラインから以下のコマンドを入力して、binフォルダまで移動する。 +
+なおコマンドプロンプトおよびシェルの詳細な操作方法は別章で説明する。 +
+
+....
+cd binフォルダまでのパス
+....
+
+その後以下のコマンドを入力する
+
+....
+java --version
+....
+
+以下のような結果が表示される。
+
+....
+openjdk 11 2018-09-25
+OpenJDK Runtime Environment 18.9 (build 11+28)
+OpenJDK 64-Bit Server VM 18.9 (build 11+28, mixed mode)
+....
+
+この状態でもjavaの開発実行はできなくもないが、常にjava.exeやjavac.exeの場所を意識しなくてはならないので、ディレクトリのどの場所からもjavaコマンドなどが有効になるように、binフォルダまでのパスを環境変数に登録する。 +
+環境変数としてパスを登録すると、コマンド実行時にパス配下のコマンドと同名の**.exe**や**.cmd**ファイルを走査し実行してくれる。 +
+なお、全く同名のコマンドが別々のパスに存在する場合は、先にヒットした方が実行されるため、注意が必要である。 +
+環境変数の登録はコマンドプロンプト**setコマンド**を実行する設定する方法とコントロールパネルを使用する方法がある。 +
+コントロールパネルでは``システムとセキュリティ→システム→システムの詳細設定→環境変数``と移動する。 +
+以下の画面で環境変数を定義する。 +
+
+.環境変数
+[#EnvironmentVar]
+image::JavaTutorial/EnvironmentVar.png[EnvironmentVar]
+
+画像からわかるように、環境変数には``ユーザー環境変数``と``システム環境変数``が存在する。 +
+ユーザー環境変数に定義した場合は、現在利用しているユーザーが利用している際に有効になり、システム環境変数の場合はシステム全体で有効になる。 +
+いずれかの環境変数の中の``Path``を選択し、binフォルダまでの絶対パスを記述する。 +
+
+Pathが正常に登録されていれば、コマンドプロンプトやシェルでどこのディレクトリでもjavaコマンドが実行できるようになる。 
+
