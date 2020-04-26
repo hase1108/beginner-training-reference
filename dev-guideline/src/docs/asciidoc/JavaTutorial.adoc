@@ -8,8 +8,8 @@ include::include_all.adoc[]
 
 [[JavaTutorial_Overview]]
 == Overview
-本章ではJavaによるプログラミングの簡単なチュートリアルを行う。 +
-Javaの仕様以外の事柄についても適宜説明を指しはさむ。 +
+本章ではJavaによるプログラミングの簡単なチュートリアルを行い、Javaへの理解を深める。 +
+Javaの仕様以外の事柄についても適宜説明を指しはさむが、変数の定義やインデントなど細かい部分を上げるとキリがないため説明事項は絞る。 +
 
 [[JavaTutorial_Environment]]
 == 実行環境を整える
@@ -78,3 +78,461 @@ image::JavaTutorial/EnvironmentVar.png[EnvironmentVar]
 
 Pathが正常に登録されていれば、コマンドプロンプトやシェルでどこのディレクトリでもjavaコマンドが実行できるようになる。 
 
+[[JavaTutorial_HelloJava]]
+== Hello Java
+<<_JavaTutorial_Environment_OpenJDK,OpenJDKをインストール>>した時点でアプリケーションを開発することができる。 +
+今回は、プログラミング学習の初期によく行われるコンソールに``Hello Java!``と表示させるアプリケーションを開発する。 +
+
+任意のディレクトリに``HelloJava.java``というファイルを作成する。 +
+
+.javaファイルのディレクトリ
+[#HelloJava_Dir]
+image::JavaTutorial/HelloJava_Dir.png[HelloJava_Dir]
+
+
+以降``Hello Java!``と表示させるためにHelloJava.javaの編集を行うが、編集を行うにあたってはどのようなエディタを使用しても構わない。 +
+なお、テキストを記述する場合は基本的に半角英数字を用いる事。 +
+以下にHelloJava.javaに記述する内容を示す。 +
+
+.HelloJava.java
+----
+public class SayHello /* (1) */{
+
+	public static void main(String[] args) /* (2) */{
+		
+		System.out.println("Hello Java!"); /* (3) */
+
+	}
+
+}
+----
+
+.HelloJava.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|javaのソースファイルにはclassを宣言することができる。 +
+classの範囲は``{}``で示される。
+なおpublicクラスはソースファイルには一つしか宣言できないが、privateクラスは複数記述できる。 +
+classについては後述する。 +
+
+|2
+|mainメソッドと呼称される部分であり、javaのプログラムは #必ずmainメソッドから実行される。# +
+mainメソッドの範囲もclassと同様``{}``で表される。 +
+String[] argsの部分に関しては後述する。 +
+
+|3
+|(2)で述べたようにjavaは必ずmainメソッドから実行されるが、mainメソッド内は上から順番に処理が実行される。 +
+今回はコンソールに``Hello Java!``と表示するための処理を記述している。 +
+|===
+
+HelloJava.javaが作成できたらシェルかコマンドプロンプトでHelloJava.javaが保存されているディレクトリまで移動し、``javac HelloJava.java``コマンドを実行してjavaファイルをコンパイルする。 +
+コマンド実行後javaファイルが保存されているディレクトリに**classファイル**が作成されていることがわかる。 +
+
+.classファイル
+[#ClassFile]
+image::JavaTutorial/ClassFile.png[ClassFile]
+
+classファイルが作成されたことを確認したら``java HelloJava``コマンドを実行すると``Hello Java!``とコンソールに表示される。 +
+
+[[JavaTutorial_HelloJava_Class]]
+=== Class
+Javaでは前述したようにソースファイルにclassを宣言することができる。 +
+classはJavaによるプログラミングの核であり、オブジェクト指向を表現するための基本の単位になる。 +
+以下の要素を内部に持つ
+
+* メンバー変数(属性/フィールド)
+* メソッド(動作/機能)
+
+クラスからはクラスに従った**オブジェクト**を一つ以上生成する事ができる。 +
+オブジェクトの状態はメンバー変数として保持し、オブジェクトの機能をメソッドで表す。 +
+HelloJavaアプリケーションではメンバー変数は存在しないが、メソッドとしてmainメソッドが定義されている。 +
+通常オブジェクト指向言語は、このオブジェクト間で何らかのメッセージ(情報/引数)などをやりとりすることで成り立つ。 +
+HelloJavaアプリケーションでは上記の作用を説明しづらいため、詳しい説明は後述する。 +
+
+[[JavaTutorial_HelloJava_AccessMod]]
+=== アクセス修飾子
+HelloJavaアプリケーションでも使用されていたが、クラス/メソッド/メンバー変数には自身に対するアクセスを制限するアクセス修飾子を設定する事ができる。 +
+アクセス修飾子の種類を以下に示す。
+
+
+.アクセス修飾子
+[cols="10,60,10,10,10", options="header"]
+|===
+|アクセス修飾子
+|概要
+|メンバー変数
+|メソッド
+|Class
+
+|public
+|全てのクラスからアクセス可能
+|〇
+|〇
+|〇
+
+|protected
+|自身のクラスとそのサブクラス(後述)からアクセス可能
+|〇
+|〇
+|×
+
+|なし
+|自身のクラスと同じパッケージ(後述)からアクセス可能
+|〇
+|〇
+|〇
+
+|private
+|自身のクラスからのみアクセスが可能
+|〇
+|〇
+|×
+|===
+
+今回作成したHelloJavaアプリケーションは単一のクラスで成立するため特に気にする必要はないが、通常の開発ではこのアクセス修飾子をうまく使う必要がある。 +
+アクセス修飾子を使わずpublicのみで開発を行うと、他のクラスから自分の保持するデータを予期せず変更されたり、想定しない状態でメソッドを実行されてしまう可能性がある。 +
+そのため他のオブジェクトから使用されたい機能、データをコントロールする用途としてアクセス修飾子を利用する。 +
+なお、アクセス修飾子の特別なルール2点を以下に上げる。 +
+
+* mainメソッドは**必ずpublic**である必要がある
+* publicなclassはjavaファイルに一つしか定義できず、その場合ファイル名とクラス名は大文字小文字含めて完全に一致した名称である必要がある
+
+[[JavaTutorial_IDE]]
+== IDEのインストール
+
+前述したように、Javaアプリケーションを開発するにあたり、ソースコードを記述するためのエディタは何でもよい。 +
+しかし、管理するクラスなどが膨大になる通常の開発ではWindowsのメモ帳などでは難しいため、**IDE(Integrated Development Environment／統合開発環境)**と呼ばれるツールを利用することが多い。 +
+IDEは非常にたくさんの種類があるが、今後開発するアプリケーションなどの兼ね合いから、今回は**STS(Spring Tool Suite)**をインストールする。 +
+既に自分の好みのIDEやエディタが存在する場合は、この節は飛ばして構わないが、今後の説明はSTSを使用していることを前提とするため、適宜読み替えること。 +
+
+STSはフリーソフトであり、 https://spring.io/tools[Spring IO]からjarファイルをダウンロードできる。 +
+jarファイルについては別章で説明するが、jarファイルを適当なディレクトリに配置したのち、以下のコマンドを実行し、ファイルを展開する。 +
+
+```
+java -jar <ダウンロードしたファイル名>
+```
+
+配置したディレクトリと同じ階層に**sts-x.x.x.RELEASE**ディレクトリが作成され、配下にSTSの本体である**SpringToolSuite4.exe**が生成されている。 +
+このexeファイルをダブルクリックすることでIDEが起動するが、初回起動時はプログラム開発をする時の作業スペースであるワークスペースを指定する必要がある。 +
+ワークスペースは変更することもできるので、適当な場所を選択すること。 +
+より詳細な情報は https://github.com/spring-projects/sts4/wiki/Installation[公式のGitHub]を参照すること。
+
+NOTE: 今回は便宜上STSをIDEとしたが、今回インストールしたものはEclipseというIDEをベースにSTSというプラグインを組み込んだものである。 
+STSのプラグインとしてはVSCode向けのものも存在する。
+
+[[JavaTutorial_FizzBuzz]]
+== FizzBuzzアプリケーション
+
+HelloJavaの次のアプリケーションとして、FizzBuzzというゲームを模したものを作成する。 +
+FizzBuzzはプログラミングに必要な条件分岐やループを学習のによく使われているゲームである。 +
+今回作成するFizzBuzzアプリケーションの概要は以下の通りである。 +
+
+* コンソールに1から順番に数字を表示する
+* 数字が3で割り切れる場合は**Fizz**、5で割り切れる場合は**Buzz**、15で割り切れる場合は**FizzBuzz**と表示する
+* プログラム中に指定した数まで数え上げたら終了する
+
+また、今回から前節でインストールしたSTSを利用して開発する。 +
+STS起動後、左側のPackageExplorer内で右クリックし、``new → Java Project``を選択する。 +
+以下の画面が表示されるので、ProjectNameに適当な名称を入れてFinishする。
+
+.NewJavaProject
+[#NewJavaProject]
+image::JavaTutorial/NewJavaProject.png[NewJavaProject]
+
+今回はFizzBuzzプロジェクトとする。 +
+続いて作成したパッケージ上で右クリックし、``new → Class``を選択する。 +
+以下の画面が表示されるため、**Name**に適当なクラス名(今回はFizzBuzz)を入力し、**public static void main(Struing [] args)**にチェックを入れ、Finishする。
+
+.NewJavaClass
+[#NewJavaClass]
+image::JavaTutorial/NewJavaClass.png[NewJavaClass]
+
+以下のようになれば問題はない。
+
+.FizzBuzzBlankProject
+[#FizzBuzzBlankProject]
+image::JavaTutorial/FizzBuzzBlankProject.png[FizzBuzzBlankProject]
+
+これでコーディングを行う準備が出来たので、続いてソースコードを記述していく。 +
+なお、IDEを使用してソースを記述することのメリットとして、STSであれば``Ctrl + Space``でソースコードの補完ができたり、ソースコードの不備を自動でチェックしてくれる。 +
+今回のアプリケーションでは記述量も少ないためあまり恩恵を感じないが、実際の業務であれば必須と言ってよい。 +
+
+今回のFizzBuzzアプリケーションのソースコードは以下の用意なる。 +
+
+.FizzBuzz.java
+----
+public class FizzBuzz {
+
+	public static void main(String[] args) {
+		
+		int maxCount = 30; //(1)
+		
+		for( int i = 1; i <= maxCount; i++ /*(2)*/) {
+			if(i % 15 == 0 ) { //(3)
+				System.out.println("FizzBuzz");  //(4)
+			}else if( i % 3 == 0 ) {
+				System.out.println("Fizz");
+			}else if(i % 5 == 0 ) {
+				System.out.println("Buzz");
+			}else {
+				System.out.println(i);
+			}
+		}
+	}
+}
+
+----
+
+.FizzBuzz.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|FizzBuzzで数え上げる最大の数を``ローカル変数``として定義する。 +
+ローカル変数はメソッド内で定義され、基本的には定義されて以降からそのメソッドが終了するまでしか有効ではなく、メソッドの外で使用することはできない。
+
+|2
+|``for文``を定義する。 +
+for文は**{}**で囲まれた範囲を指定の回数繰り返す処理になる。 +
+繰り返す条件は**()**で囲まれた部分に記述される。 +
+なお、for文の異なる形として拡張for文が存在するが、今回は説明しない。
+
+|3
+|``if文``を定義する。 +
+if文は**()**で囲まれた部分に定義された条件式を都度判定し、()内の式がtrueであれば**{}**で定義された処理を行う。 +
+if文の条件式がfalseである場合、続いて記述される``else if``もしくは``else``に飛ぶ。 +
+else ifでは再度条件式を定義することができ、else文は定義された条件式が全てfalseである場合に実行される。
+
+|4
+|(3)で説明されたように、if文、もしくはelse if文がtrueであれば記述された処理が実行される。 +
+``System.out.println``はHelloJavaアプリでも記述したが、標準出力に文字列を表示するメソッドである。
+|===
+
+作成したプログラムは、前回のように``javac``及び``java``コマンドを使って実行することもできるが、今回はIDEを利用して実行する。 +
+作成したアプリケーションに対し右クリックをし、**Run As → Java Application**を選択することで、コンパイルと実行を同時に行ってくれる。 +
+実行すると、IDE下部のコンソールに1～30までのFizzBuzzの結果が羅列されることがわかる。 +
+
+for文とif文を用いることで、多くの処理を実装することができる。 
+
+[[JavaTutorial_CL]]
+== 最大数を指定できるFizzBuzzアプリ
+<<JavaTutorial_FizzBuzz, FizzBuzzアプリケーション>>で実装したアプリケーションは、数え上げの最大値が固定である。 +
+そこで、今度はアプリケーション実行時に数値を指定することで、任意の数までのFizzBuzzを行えるようにアプリケーションを改良する。 +
+またアプリケーションの実装方式を変更する。 +
+
+再度IDEに適当なプロジェクト名でアプリケーションを作成する。 +
+今回はmainメソッドを持つクラスを``Mainクラス``として定義し、実際にFizzBuzzを出力するクラスを``FizzBuzzクラス``として定義する。 +
+
+FizzBuzzクラスを以下のように記述する。 +
+
+FizzBuzz.java
+----
+public class FizzBuzz {
+	
+	private int dynamicCount;  //(1)
+	
+	public FizzBuzz(int count) /*(2)*/{
+		this.dynamicCount = count; //(3)
+	}
+	
+	public void doDynamicFizzBuzz() /*(4)*/{
+		
+		fizzBuzzImpl(dynamicCount); //(5)
+		
+	}
+	
+	private static void fizzBuzzImpl(int count) /*(6)*/{
+		for( int i = 1; i <= count; i++ ) {
+			if(i % 15 == 0 ) {
+				System.out.println("FizzBuzz");
+			}else if( i % 3 == 0 ) { 
+				System.out.println("Fizz");
+			}else if(i % 5 == 0 ) {
+				System.out.println("Buzz");
+			}else {
+				System.out.println(i);
+			}
+		}
+	}
+}
+----
+
+.FizzBuzz.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|FizzBuzzの数え上げの最大数を保持するフィールドを定義する。
+
+|2
+|コンストラクタを定義する。 +
+コンストラクタはクラス名と同名のメソッド名を持ち、後述するインスタンス化を行うために呼び出す必要があるメソッドである。 +
+
+|3
+|コンストラクタの引数として受け取った値をフィールドに代入する。
+
+|4
+|FizzBuzzを行う処理を呼び出すメソッドを定義する。 +
+
+|5
+|フィールドに定義した数え上げの最大数を使ってFizzBuzzを表示するメソッドを呼び出す。
+
+|6
+|実際にFizzBuzzを表示するメソッドを定義する。 +
+内容は<<JavaTutorial_FizzBuzz, FizzBuzzアプリケーション>>で定義したもの
+とほぼ変わらないが、数え上げの最大値を引数として受け取れるようにしている。
+|===
+
+Mainクラスは以下のように記述する。
+
+Main.java
+----
+public class Main {
+
+	public static void main(String[] args) /*(1)*/{
+		
+		Integer arg = Integer.parseInt(args[0]);  //(2)
+		
+		FizzBuzz fizzBuzz = new FizzBuzz(arg); //(3)
+		
+		System.out.println("===arg fizzBuzz===");
+		fizzBuzz.doDynamicFizzBuzz(); //(4)
+	}
+
+}
+----
+
+.Main.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|Javaは、``javaコマンド``実行時に引数を指定でき、その引数はmainメソッドの``String[] args``に代入される。 +
+
+|2
+|引数ではString型でしか取得できないため、数値を扱うInteger型に変換し``arg``変数に代入する。
+
+|3
+|FizzBuzzクラスのコンストラクタを呼び出し、``fizzBuzzインスタンス``を生成する。 +
+その際にarg変数を渡す。
+
+|4
+|``fizzBuzzインスタンス``の``doDynamicFizzBuzzメソッド``呼び出し、FizzBuzzを画面に表示する。
+|===
+
+また、前回と同様にIDEからプログラムを実行する。 +
+今回は、引数を渡す必要があるため、プロジェクトを右クリックした後**Run as → RunConfigurations**を選択し、以下の画面を表示する。 
+
+.RunConfigurations
+[#RunConfigurations]
+image::JavaTutorial/RunConfiguration.png[RunConfigurations]
+
+RunConfigurationsではProjectとMainクラスを選択して、ArgumentsタブのProgram argumentsに適当な数字を入力し、実行する。 +
+なお、Javaコマンドの場合は``java <<クラスファイル名>> <<引数>>``と指定することで同様に実行できる。 +
+
+
+[[JavaTutorial_CL_Class]]
+=== ClassとInstance
+内容は<<JavaTutorial_FizzBuzz, FizzBuzzアプリケーション>>で作成したアプリケーションは、本来であればMainクラス一つで完結するが、Javaにおけるいくつかの概念について説明を行う為にmainメソッドを持ち引数を受けるクラスと、FizzBuzzを実行するメソッドを持つクラスと二つに分割している。 +
+その説明したい事柄の一つとして**クラスとインスタンス(オブジェクト)**と呼ばれる概念が存在する。 +
+
+何度か登場しているように、Javaアプリケーション作成するにあたり、アプリケーションを構成する各々のメンバ変数とメソッドを持つ**Class**を定義する必要がある。 +
+後述するStaticと関連するが、通常アプリケーションではClassを定義するだけでなく、そこから**Instance**を生成する必要がある。 +
+ClassとInstanceの関係は、多くの場合タイ焼きの型とタイ焼きの関係が出される。 +
+以下に概要を示す。 +
+
+.ClassとInstanceの関係
+[#ClassAndInstance]
+image::JavaTutorial/ClassAndInstance.png[ClassAndInstance]
+
+まず、ClassからInstanceの生成を行うために、通常は``new演算子``を用いてコンストラクタを呼び出す。 +
+今回は説明しないが、コンストラクタはFizzBuzzアプリケーションのように独自に設定することもできるが、設定しなければ自動的に何も引数を取らないコンストラクタが設定される。 +
+new演算子で生成したInstanceは同じClassから生成されるため、Classで定義されているメンバ変数とメソッドを持つことを保証するが、メンバ変数の中身自体は個々のInstanceによって独立である。 +
+これによって、同じ性質を持ちながらも色々なパターンを持ったオブジェクトを生成することができる。 +
+
+また、Classで定義されたメソッドは、通常Instanceしなければ実行することができない。 +
+Classで定義されたメソッドをInstance化せずに使用することもできるが、それは後述する。
+
+[[JavaTutorial_CL_Static]]
+=== Static
+<<JavaTutorial_CL_Class,ClassとInstance>>で述べたように、同じClassから生成されたInstanceは同じ種類のメンバ変数を持つことができるが、その中身は個々のInstanceで独立である。 +
+しかし、Javaでは``static宣言``を行うことでClassに属するメンバ変数を持つことができる。 +
+Classに属するメンバ変数といってもInstanceからアクセスすることができるが、大きく異なる点として、宣言したメンバ変数はInstanceの個々に独立ではなくClassに定義した変数をそれぞれ参照しているだけに過ぎないため、変数の中身の変更が同じClassのInstance全体に及ぶ。 +
+
+また、``static宣言``はメソッドにも付与することができる。 +
+この場合、付与したメソッドはClassに属する為Instance化しなくても実行することができるようになる。 +
+
+static宣言を付与した場合の注意点として、staticが付与されたメンバ変数とメソッドは通常Classが定義されている限りアクセス可能な状態として存在するが、付与されていないメソッドとメンバ変数はInstanceが生成さない限りアクセスは不可能である。 +
+
+以下にstaticを付与した場合の概略図を示す。
+
+.Static宣言
+[#Static]
+image::JavaTutorial/Static.png[Static]
+
+FizzBuzzアプリにもstaticを付与しているものがあるが、今回はより簡単なアプリケーションで挙動を確認してみる。 +
+コードは以下のようになる。 +
+
+staticを付与したクラスは以下のようになる。 +
+
+Number.java
+----
+public class Number {
+
+	public static int staticNum = 10;
+	
+	public int dynamicNum;
+	
+	public Number(int num) {
+		this.dynamicNum = num;
+	}
+	
+}
+----
+
+mainメソッドを持つクラスを以下のようになる。 +
+
+
+Main.class
+----
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		System.out.println(Number.staticNum);
+		
+		Number number1 = new Number(1);
+		Number number2 = new Number(2);
+		System.out.println(number1.dynamicNum);
+		System.out.println(number2.dynamicNum);
+		System.out.println(number1.staticNum);
+		System.out.println(number2.staticNum);
+		
+		number1.dynamicNum=3;
+		System.out.println(number1.dynamicNum);
+		System.out.println(number2.dynamicNum);
+		System.out.println(number1.staticNum);
+		System.out.println(number2.staticNum);
+		
+		Number.staticNum=20;
+		System.out.println(number1.dynamicNum);
+		System.out.println(number2.dynamicNum);
+		System.out.println(number1.staticNum);
+		System.out.println(number2.staticNum);
+	}
+}
+
+----
+
+このアプリケーションからstaticを付与した変数が単一であることがわかるだろう。
