@@ -217,15 +217,108 @@ java -jar <ダウンロードしたファイル名>
 ```
 
 配置したディレクトリと同じ階層に**sts-x.x.x.RELEASE**ディレクトリが作成され、配下にSTSの本体である**SpringToolSuite4.exe**が生成されている。 +
-このexeファイルをダブルクリックすることでIEDが起動するが、初回起動時はプログラム開発をする時の作業スペースであるワークスペースを指定する必要がある。 +
+このexeファイルをダブルクリックすることでIDEが起動するが、初回起動時はプログラム開発をする時の作業スペースであるワークスペースを指定する必要がある。 +
 ワークスペースは変更することもできるので、適当な場所を選択すること。 +
 より詳細な情報は https://github.com/spring-projects/sts4/wiki/Installation[公式のGitHub]を参照すること。
 
-NOTE: 今回は便宜上STSをIEDとしたが、今回インストールしたものはEclipseというIEDをベースにSTSというプラグインを組み込んだものである。 
+NOTE: 今回は便宜上STSをIDEとしたが、今回インストールしたものはEclipseというIDEをベースにSTSというプラグインを組み込んだものである。 
 STSのプラグインとしてはVSCode向けのものも存在する。
 
 [[JavaTutorial_FizzBuzz]]
 == FizzBuzz
+
+HelloJavaの次のアプリケーションとして、FizzBuzzというゲームを模したものを作成する。 +
+FizzBuzzはプログラミングに必要な条件分岐やループを学習のによく使われているゲームである。 +
+今回作成するFizzBuzzアプリケーションの概要は以下の通りである。 +
+
+* コンソールに1から順番に数字を表示する
+* 数字が3で割り切れる場合は**Fizz**、5で割り切れる場合は**Buzz**、15で割り切れる場合は**FizzBuzz**と表示する
+* プログラム中に指定した数まで数え上げたら終了する
+
+また、今回から前節でインストールしたSTSを利用して開発する。 +
+STS起動後、左側のPackageExplorer内で右クリックし、``new → Java Project``を選択する。 +
+以下の画面が表示されるので、ProjectNameに適当な名称を入れてFinishする。
+
+.NewJavaProject
+[#NewJavaProject]
+image::JavaTutorial/NewJavaProject.png[NewJavaProject]
+
+今回はFizzBuzzプロジェクトとする。 +
+続いて作成したパッケージ上で右クリックし、``new → Class``を選択する。 +
+以下の画面が表示されるため、**Name**に適当なクラス名(今回はFizzBuzz)を入力し、**public static void main(Struing [] args)**にチェックを入れ、Finishする。
+
+.NewJavaClass
+[#NewJavaClass]
+image::JavaTutorial/NewJavaClass.png[NewJavaClass]
+
+以下のようになれば問題はない。
+
+.FizzBuzzBlankProject
+[#FizzBuzzBlankProject]
+image::JavaTutorial/FizzBuzzBlankProject.png[FizzBuzzBlankProject]
+
+これでコーディングを行う準備が出来たので、続いてソースコードを記述していく。 +
+なお、IEDを使用してソースを記述することのメリットとして、STSであれば``Ctrl + Space``でソースコードの補完ができたり、ソースコードの不備を自動でチェックしてくれる。 +
+今回のアプリケーションでは記述量も少ないためあまり恩恵を感じないが、実際の業務であれば必須と言ってよい。 +
+
+今回のFizzBuzzアプリケーションのソースコードは以下の用意なる。 +
+
+.FizzBuzz.java
+----
+public class FizzBuzz {
+
+	public static void main(String[] args) {
+		
+		int maxCount = 30; //(1)
+		
+		for( int i = 1; i <= maxCount; i++ /*(2)*/) {
+			if(i % 15 == 0 ) { //(3)
+				System.out.println("FizzBuzz");  //(4)
+			}else if( i % 3 == 0 ) {
+				System.out.println("Fizz");
+			}else if(i % 5 == 0 ) {
+				System.out.println("Buzz");
+			}else {
+				System.out.println(i);
+			}
+		}
+	}
+}
+
+----
+
+.FizzBuzz.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|FizzBuzzで数え上げる最大の数を``ローカル変数``として定義する。 +
+ローカル変数はメソッド内で定義され、基本的には定義されて以降からそのメソッドが終了するまでしか有効ではなく、メソッドの外で使用することはできない。
+
+|2
+|``for文``を定義する。 +
+for文は**{}**で囲まれた範囲を指定の回数繰り返す処理になる。 +
+繰り返す条件は**()**で囲まれた部分に記述される。 +
+なお、for文の異なる形として拡張for文が存在するが、今回は説明しない。
+
+|3
+|``if文``を定義する。 +
+if文は**()**で囲まれた部分に定義された条件式を都度判定し、()内の式がtrueであれば**{}**で定義された処理を行う。 +
+if文の条件式がfalseである場合、続いて記述される``else if``もしくは``else``に飛ぶ。 +
+else ifでは再度条件式を定義することができ、else文は定義された条件式が全てfalseである場合に実行される。
+
+|4
+|(3)で説明されたように、if文、もしくはelse if文がtrueであれば記述された処理が実行される。 +
+``System.out.println``はHelloJavaアプリでも記述したが、標準出力に文字列を表示するメソッドである。
+|===
+
+作成したプログラムは、前回のように``javac``及び``java``コマンドを使って実行することもできるが、今回はIDEを利用して実行する。 +
+作成したアプリケーションに対し右クリックをし、**Run As → Java Application**を選択することで、コンパイルと実行を同時に行ってくれる。 +
+実行すると、IDE下部のコンソールに1～30までのFizzBuzzの結果が羅列されることがわかる。 +
+
+for文とif文を用いることで、多くの処理を実装することができる。 
 
 [[JavaTutorial_CLI]]
 == CLIアプリケーション
