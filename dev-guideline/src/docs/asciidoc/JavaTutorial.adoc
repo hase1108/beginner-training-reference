@@ -225,7 +225,7 @@ NOTE: 今回は便宜上STSをIDEとしたが、今回インストールした�
 STSのプラグインとしてはVSCode向けのものも存在する。
 
 [[JavaTutorial_FizzBuzz]]
-== FizzBuzz
+== FizzBuzzアプリケーション
 
 HelloJavaの次のアプリケーションとして、FizzBuzzというゲームを模したものを作成する。 +
 FizzBuzzはプログラミングに必要な条件分岐やループを学習のによく使われているゲームである。 +
@@ -258,7 +258,7 @@ image::JavaTutorial/NewJavaClass.png[NewJavaClass]
 image::JavaTutorial/FizzBuzzBlankProject.png[FizzBuzzBlankProject]
 
 これでコーディングを行う準備が出来たので、続いてソースコードを記述していく。 +
-なお、IEDを使用してソースを記述することのメリットとして、STSであれば``Ctrl + Space``でソースコードの補完ができたり、ソースコードの不備を自動でチェックしてくれる。 +
+なお、IDEを使用してソースを記述することのメリットとして、STSであれば``Ctrl + Space``でソースコードの補完ができたり、ソースコードの不備を自動でチェックしてくれる。 +
 今回のアプリケーションでは記述量も少ないためあまり恩恵を感じないが、実際の業務であれば必須と言ってよい。 +
 
 今回のFizzBuzzアプリケーションのソースコードは以下の用意なる。 +
@@ -320,5 +320,219 @@ else ifでは再度条件式を定義することができ、else文は定義さ
 
 for文とif文を用いることで、多くの処理を実装することができる。 
 
-[[JavaTutorial_CLI]]
-== CLIアプリケーション
+[[JavaTutorial_CL]]
+== 最大数を指定できるFizzBuzzアプリ
+<<JavaTutorial_FizzBuzz, FizzBuzzアプリケーション>>で実装したアプリケーションは、数え上げの最大値が固定である。 +
+そこで、今度はアプリケーション実行時に数値を指定することで、任意の数までのFizzBuzzを行えるようにアプリケーションを改良する。 +
+またアプリケーションの実装方式を変更する。 +
+
+再度IDEに適当なプロジェクト名でアプリケーションを作成する。 +
+今回はmainメソッドを持つクラスを``Mainクラス``として定義し、実際にFizzBuzzを出力するクラスを``FizzBuzzクラス``として定義する。 +
+
+FizzBuzzクラスを以下のように記述する。 +
+
+FizzBuzz.java
+----
+public class FizzBuzz {
+	
+	private int dynamicCount;  //(1)
+	
+	public FizzBuzz(int count) /*(2)*/{
+		this.dynamicCount = count; //(3)
+	}
+	
+	public void doDynamicFizzBuzz() /*(4)*/{
+		
+		fizzBuzzImpl(dynamicCount); //(5)
+		
+	}
+	
+	private static void fizzBuzzImpl(int count) /*(6)*/{
+		for( int i = 1; i <= count; i++ ) {
+			if(i % 15 == 0 ) {
+				System.out.println("FizzBuzz");
+			}else if( i % 3 == 0 ) { 
+				System.out.println("Fizz");
+			}else if(i % 5 == 0 ) {
+				System.out.println("Buzz");
+			}else {
+				System.out.println(i);
+			}
+		}
+	}
+}
+----
+
+.FizzBuzz.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|FizzBuzzの数え上げの最大数を保持するフィールドを定義する。
+
+|2
+|コンストラクタを定義する。 +
+コンストラクタはクラス名と同名のメソッド名を持ち、後述するインスタンス化を行うために呼び出す必要があるメソッドである。 +
+
+|3
+|コンストラクタの引数として受け取った値をフィールドに代入する。
+
+|4
+|FizzBuzzを行う処理を呼び出すメソッドを定義する。 +
+
+|5
+|フィールドに定義した数え上げの最大数を使ってFizzBuzzを表示するメソッドを呼び出す。
+
+|6
+|実際にFizzBuzzを表示するメソッドを定義する。 +
+内容は<<JavaTutorial_FizzBuzz, FizzBuzzアプリケーション>>で定義したもの
+とほぼ変わらないが、数え上げの最大値を引数として受け取れるようにしている。
+|===
+
+Mainクラスは以下のように記述する。
+
+Main.java
+----
+public class Main {
+
+	public static void main(String[] args) /*(1)*/{
+		
+		Integer arg = Integer.parseInt(args[0]);  //(2)
+		
+		FizzBuzz fizzBuzz = new FizzBuzz(arg); //(3)
+		
+		System.out.println("===arg fizzBuzz===");
+		fizzBuzz.doDynamicFizzBuzz(); //(4)
+	}
+
+}
+----
+
+.Main.javaの説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|Javaは、``javaコマンド``実行時に引数を指定でき、その引数はmainメソッドの``String[] args``に代入される。 +
+
+|2
+|引数ではString型でしか取得できないため、数値を扱うInteger型に変換し``arg``変数に代入する。
+
+|3
+|FizzBuzzクラスのコンストラクタを呼び出し、``fizzBuzzインスタンス``を生成する。 +
+その際にarg変数を渡す。
+
+|4
+|``fizzBuzzインスタンス``の``doDynamicFizzBuzzメソッド``呼び出し、FizzBuzzを画面に表示する。
+|===
+
+また、前回と同様にIDEからプログラムを実行する。 +
+今回は、引数を渡す必要があるため、プロジェクトを右クリックした後**Run as → RunConfigurations**を選択し、以下の画面を表示する。 
+
+.RunConfigurations
+[#RunConfigurations]
+image::JavaTutorial/RunConfiguration.png[RunConfigurations]
+
+RunConfigurationsではProjectとMainクラスを選択して、ArgumentsタブのProgram argumentsに適当な数字を入力し、実行する。 +
+なお、Javaコマンドの場合は``java <<クラスファイル名>> <<引数>>``と指定することで同様に実行できる。 +
+
+
+[[JavaTutorial_CL_Class]]
+=== ClassとInstance
+内容は<<JavaTutorial_FizzBuzz, FizzBuzzアプリケーション>>で作成したアプリケーションは、本来であればMainクラス一つで完結するが、Javaにおけるいくつかの概念について説明を行う為にmainメソッドを持ち引数を受けるクラスと、FizzBuzzを実行するメソッドを持つクラスと二つに分割している。 +
+その説明したい事柄の一つとして**クラスとインスタンス(オブジェクト)**と呼ばれる概念が存在する。 +
+
+何度か登場しているように、Javaアプリケーション作成するにあたり、アプリケーションを構成する各々のメンバ変数とメソッドを持つ**Class**を定義する必要がある。 +
+後述するStaticと関連するが、通常アプリケーションではClassを定義するだけでなく、そこから**Instance**を生成する必要がある。 +
+ClassとInstanceの関係は、多くの場合タイ焼きの型とタイ焼きの関係が出される。 +
+以下に概要を示す。 +
+
+.ClassとInstanceの関係
+[#ClassAndInstance]
+image::JavaTutorial/ClassAndInstance.png[ClassAndInstance]
+
+まず、ClassからInstanceの生成を行うために、通常は``new演算子``を用いてコンストラクタを呼び出す。 +
+今回は説明しないが、コンストラクタはFizzBuzzアプリケーションのように独自に設定することもできるが、設定しなければ自動的に何も引数を取らないコンストラクタが設定される。 +
+new演算子で生成したInstanceは同じClassから生成されるため、Classで定義されているメンバ変数とメソッドを持つことを保証するが、メンバ変数の中身自体は個々のInstanceによって独立である。 +
+これによって、同じ性質を持ちながらも色々なパターンを持ったオブジェクトを生成することができる。 +
+
+また、Classで定義されたメソッドは、通常Instanceしなければ実行することができない。 +
+Classで定義されたメソッドをInstance化せずに使用することもできるが、それは後述する。
+
+[[JavaTutorial_CL_Static]]
+=== Static
+<<JavaTutorial_CL_Class,ClassとInstance>>で述べたように、同じClassから生成されたInstanceは同じ種類のメンバ変数を持つことができるが、その中身は個々のInstanceで独立である。 +
+しかし、Javaでは``static宣言``を行うことでClassに属するメンバ変数を持つことができる。 +
+Classに属するメンバ変数といってもInstanceからアクセスすることができるが、大きく異なる点として、宣言したメンバ変数はInstanceの個々に独立ではなくClassに定義した変数をそれぞれ参照しているだけに過ぎないため、変数の中身の変更が同じClassのInstance全体に及ぶ。 +
+
+また、``static宣言``はメソッドにも付与することができる。 +
+この場合、付与したメソッドはClassに属する為Instance化しなくても実行することができるようになる。 +
+
+static宣言を付与した場合の注意点として、staticが付与されたメンバ変数とメソッドは通常Classが定義されている限りアクセス可能な状態として存在するが、付与されていないメソッドとメンバ変数はInstanceが生成さない限りアクセスは不可能である。 +
+
+以下にstaticを付与した場合の概略図を示す。
+
+.Static宣言
+[#Static]
+image::JavaTutorial/Static.png[Static]
+
+FizzBuzzアプリにもstaticを付与しているものがあるが、今回はより簡単なアプリケーションで挙動を確認してみる。 +
+コードは以下のようになる。 +
+
+staticを付与したクラスは以下のようになる。 +
+
+Number.java
+----
+public class Number {
+
+	public static int staticNum = 10;
+	
+	public int dynamicNum;
+	
+	public Number(int num) {
+		this.dynamicNum = num;
+	}
+	
+}
+----
+
+mainメソッドを持つクラスを以下のようになる。 +
+
+
+Main.class
+----
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		System.out.println(Number.staticNum);
+		
+		Number number1 = new Number(1);
+		Number number2 = new Number(2);
+		System.out.println(number1.dynamicNum);
+		System.out.println(number2.dynamicNum);
+		System.out.println(number1.staticNum);
+		System.out.println(number2.staticNum);
+		
+		number1.dynamicNum=3;
+		System.out.println(number1.dynamicNum);
+		System.out.println(number2.dynamicNum);
+		System.out.println(number1.staticNum);
+		System.out.println(number2.staticNum);
+		
+		Number.staticNum=20;
+		System.out.println(number1.dynamicNum);
+		System.out.println(number2.dynamicNum);
+		System.out.println(number1.staticNum);
+		System.out.println(number2.staticNum);
+	}
+}
+
+----
+
+このアプリケーションからstaticを付与した変数が単一であることがわかるだろう。
