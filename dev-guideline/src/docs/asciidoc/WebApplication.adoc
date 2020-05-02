@@ -136,7 +136,7 @@ FQDNはユーザからリクエストを送るサーバの場所を示し、パ�
 
 .URL概要
 [#URL]
-image::WebApp/URLURL.png[URL概要]
+image::WebApp/URL.png[URL概要]
 
 URLの設計は特に後述するRESTの思想に基づいたWebアプリケーションを作成する場合は重要になる。 +
 
