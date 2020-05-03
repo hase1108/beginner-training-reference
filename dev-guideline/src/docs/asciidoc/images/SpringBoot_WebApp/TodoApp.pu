@@ -1,0 +1,75 @@
+@startuml
+
+title Put Task
+
+(*) --> [ユーザがタスクのIdを送信する] if "Idに対応するタスクが存在する" then
+-right-> [false] "エラー"
+  else
+--> [true] if "対応するタスクは未完了タスクである" then
+    -right-> [false] "エラー"
+    else
+    --> [true] "対応するタスクを完了状態に変更する"
+    endif
+  endif
+--> [対応するタスクの情報をユーザに返却する] (*)
+@enduml
+
+@startuml
+
+title Delete Task
+
+(*) --> [ユーザがタスクのIdを送信する] if "Idに対応するタスクが存在する" then
+-right-> [false] "エラー"
+  else
+--> [true] "タスクを削除する" 
+--> (*)
+
+@enduml
+
+@startuml
+
+title Read Task List
+
+(*) --> [ユーザがタスクのリストを要求する] "表示用空リスト作成"
+--> "保持されているタスクを取得する(ループ開始)" as startRoop
+--> if "タスクは未完了状態である" then
+  --> [true] "リストに追加"
+  --> "次のタスクに移動する"
+else 
+  --> [false] "次のタスクに移動する"
+endif
+if "全てのタスクをチェックした" then 
+  --> [false] startRoop
+else
+  --> [true] "リストをユーザにレスポンスとして返却する"
+endif
+--> (*)
+@enduml
+
+@startuml
+
+title Read Task
+
+(*) --> [ユーザがタスクのIdを送信する] if "Idに対応するタスクが存在する" then
+-right-> [false] "エラー"
+  else
+--> [true] "タスクの情報をユーザに返却する" 
+--> (*)
+
+@enduml
+
+@startuml
+
+title Create Task
+
+(*) --> [タスク投稿] if "タスクのタイトルが仕様に基づいた形式になっている" then 
+  --> [false] "エラー"
+else
+  --> [true] if "未完了タスクが5つ以上ある" then
+  -right-> [true] "エラー"
+else
+  --> [false] "タスク追加"
+endif
+--> [投稿したタスクの情報を返却] (*)
+
+@enduml
