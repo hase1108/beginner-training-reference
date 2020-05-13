@@ -1,0 +1,197 @@
+include::include_all.adoc[]
+
+:toclevels: 5
+:sectnums:
+
+[WebAppImpl]
+= SpringBootでのWebアプリケーション実装
+
+[[WebAppImpl_Overview]]
+== Overview
+<<SpringBoot_WebApp_Prep.adoc#SpringBootWebAppPrep_Overview,前章>>でSpringBootを用いてWebアプリケーションを実装するための事前準備や事前知識について説明した。 +
+本章では実際にSpringBootアプリケーションの実装を行っていく。 +
+なお、本章から実際にAWSのサービスを利用するが、利用するサービスに関連する部分のみ説明し、基本的なAWSアカウントの登録などに関しては簡単な説明に留める。
+
+[[WebAppImpl_RemoteRepository]]
+== RemoteRepositoryの準備
+前章でも述べたように、今回はGitを使用したソースコード管理を行う。 +
+ローカル端末へのGitのインストールは前章で済ませているが、そのままではソースコードの管理はできず、リモートリポジトリを設定する必要がある。 +
+リモートリポジトリは、ローカルやサーバの適当なディレクトリに対して``git init``コマンドを実行する必要があるが、他ユーザとの共有設定などを個人で行う必要があるのに加え、GUIで管理することができない。 +
+そこで、通常は何らかのGitリポジトリマネージャアプリケーションやGitリポジトリマネージャサービスを利用することが多い。 +
+
+[[WebAppImpl_RemoteRepository_RepositoryManager]]
+=== リポジトリマネージャ
+Gitリポジトリマネージャアプリケーションは、開発者が独自に用意したアクセス可能なサーバ上にインストールした後各種設定を行い、Webアプリケーションとして動作させる。 +
+管理する手間はかかるが、閉じたネットワーク内で利用するのであれば非常にセキュアにソースコードを管理することができる。 +
+
+対してGitリポジトリマネージャサービスは各企業などがホスティングしているサービスを1ユーザとして利用する形式になる。 +
+Gitリポジトリマネージャサービスでは、基本的にユーザが独自に設定したりする項目やバックアップなどを検討する点はあまりないが、システム障害などで利用することができなくなった場合は開発者側でできることは少なく、パブリックなネットワークを経由しているため、開発に要求されるセキュリティの要件次第では利用することができない場合もある。 +
+代表的なリポジトリマネージャーを以下に示す。 +
+
+.リポジトリマネージャ
+[cols="20,50,30", options="header"]
+|===
+|名称
+|概要
+|公式
+
+|GitLab
+|Ruby及びGoで記述されたオープンソースのGitリポジトリマネージャアプリケーション
+|https://about.gitlab.com/
+
+|GitBucket
+|Scalaで記述されたオープンソースのGitリポジトリマネージャアプリケーション
+|https://gitbucket.github.io/
+
+|BitBucket
+|pythonで記述されたGitリポジトリマネージャサービス
+|https://bitbucket.org/
+
+|GitHub
+|Gitリポジトリマネージャサービスの中で最も有名なサービス
+|https://github.com/
+
+|CodeCommit
+|AWSが提供するフルマネージド型のGitリポジトリマネージャサービス
+他のサービスで提供されているissueやwikiなどのサービスがないが、他のAWSサービスとの連携に強み
+|https://aws.amazon.com/jp/codecommit/
+|===
+
+Gitでのソースコードなどの管理の利点を学ぶためであれば、GitHubなどを利用した方が良いが、今回はAWS上でアプリをデプロイする予定であるため、CodeCommitを利用していく。
+
+[[WebAppImpl_RemoteRepository_CodeCommit]]
+=== CodeCommitの準備
+前提条件として、AWSのアカウントおよびAWSコンソールから各種操作が可能なポリシーが付与されたIAMユーザで操作できること。 +
+AWSの各種初期設定方法などはlink:https://aws.amazon.com/jp/register-flow/[公式]を参照すること。 +
+
+CodeCommitは以下の手順で環境を構築する。 +
+
+. CodeCommitにリポジトリを作成
+. IAMユーザの作成
+. リモートリポジトリへのHTTPS接続のためのGit認証情報生成
+. git cloneコマンド実行
+
+AWSはローカルのPCからAWS CLIを用いてコマンドプロンプトなどのシェルから各種操作を行えるが、今回はAWSコンソールから操作を行う。 +
+なおAWSコンソールは定期的に変更されているため注意すること。
+
+[[WebAppImpl_RemoteRepository_CodeCommit_CreateRepo]]
+==== リモートリポジトリ作成
+まずはじめにCodeCommitを用いてリモートリポジトリを作成する。 +
+AWSコンソールにアクセスしたらサービスよりCodeCommitを選択する。 +
+
+.CodeCommit
+[#CodeCommit]
+image::WebApp_Impl/CodeCommit.png[CodeCommit]
+
+今回は既にリポジトリを作成した後だが、行うことはあまり変わらない。 +
+リポジトリを作成を選択し、わかりやすいリポジトリ名を付与して作成をクリックするだけでリモートリポジトリを作成することができる。 +
+
+[[WebAppImpl_RemoteRepository_CodeCommit_CreateIAM]]
+==== IAMユーザの作成
+続いてCodeCommitを利用するためのIAMユーザを作成する。 +
+CodeCommitでリモートリポジトリを作成したIAMユーザを利用してもよいが、ルートユーザなど権限が大きいIAMユーザを色々な場面で利用するのはあまり良くない。 +
+IAMユーザには**CodeCommitFullAccess**のポリシーを付与して作成する。
+
+[[WebAppImpl_RemoteRepository_CodeCommit_CreateCert]]
+==== Git認証情報生成
+
+リモートリポジトリとIAMユーザを作成したが、これだけではリモートリポジトリにアクセスすることはできない。 +
+ローカルリポジトリを作成し、リモートリポジトリと同期をするためにも``git clone``コマンドを実行する必要がある。 +
+この際リモートとローカル間で通信を行う必要があるが、通常**HTTPS**もしくは**SSH**で通信の暗号化を行うのがベストプラクティスとされる。 +
+リポジトリマネージャによっては暗号化を行わない**HTTP**でもアクセス可能な場合があるが、セキュリティの観点から暗号化を行った通信方式を利用することをお勧めする。 +
+
+今回は**HTTPS**を用いて通信の暗号化を行う。 +
+HTTPSを利用するにあたり、認証情報を生成する必要があるため、<<WebAppImpl_RemoteRepository_CodeCommit_CreateIAM,IAMユーザの作成>>で作成したユーザを利用する。
+AWSコンソールからIAM該当のIAMユーザを選択し、認証タブから以下の画像のような場所を探す。 +
+
+.Git認証情報
+[#GitCertification]
+image::WebApp_Impl/IAM_Certification.png[Git認証情報]
+
+あとは認証情報を生成をクリックするだけでよい。 +
+CSVファイルを取得するが、認証情報はそのCSVファイルに記載されているため削除しないこと。 +
+
+[[WebAppImpl_RemoteRepository_CodeCommit_GitClone]]
+==== git cloneコマンド実行
+続いてローカルリポジトリとリモートリポジトリを同期し、利用可能な状態にする。 +
+まずはCodeCommitから該当のリポジトリに移動し、**URLのクローン**のプルダウンメニューから**HTTPSのクローン**を選択する。 +
+これでリモートリポジトリと同期するためのURLがクリップボードにコピーされた状態になる。 +
+
+その後ローカルのコマンドプロンプトから適当なディレクトリに移動したのち、``git clone <<クリップボードのURL>>``コマンドを実行する。 +
+実行すると認証情報を要求されるため、<<WebAppImpl_RemoteRepository_CodeCommit_CreateCert,Git認証情報生成>>で取得したCSVファイルから認証情報を転記する。 +
+これでローカルリポジトリとリモートリポジトリの同期が取れるようになり、利用可能な状態になった。
+
+[[WebAppImpl_Coding]]
+== ブランクプロジェクト作成
+<<WebAppImpl_RemoteRepository_CodeCommit,CodeCommitの準備>>でGitも利用できるようになったが、この状態ではまだリポジトリに何も入っていない。 +
+この状態から自分で必要なディレクトリやxmlファイルなどを作成することも可能だが、今回はlink:https://start.spring.io/[spring initializr]を利用して、プロジェクトのひな型を作成し、それを利用することにする。 +
+
+ひな型を作成するにあたり、前述のSpring initializrにアクセスした後以下の設定を選択する。
+
+* Project : Maven
+* Language : Java
+* SpringBoot : 2.2.*
+* Group : com.example.demo
+* Artifact : todo
+* Name : TodoApp
+* Java : 11
+* Dependencies : Lombok, Spring Web 
+
+上記以外の部分は特にいじる必要はない。 +
+この状態で**Generate**を選択するとブランクプロジェクトの格納されたZIPファイルを取得できるので、解凍したのちローカルリポジトリに格納する。 +
+これで一応ブランクプロジェクトが作成されたが、この状態ではSTSに認識されていないため、STSから``Package Explorer -> 右クリック -> Import ->  Maven -> Existing Maven Project``で先ほど配置したディレクトリを選択する。 +
+以下の状態になれば良い。 +
+
+.ブランクプロジェクトのImport
+[#BlankProject]
+image::WebApp_Impl/STS.png[ブランクプロジェクトのImport]
+
+引き継ぐき**Lombok**をSTSで利用できるようにする。 +
+Lombokはプログラミングにおける**ボイラープレートコード**をアノテーションで簡略化して記述できるようにするJavaのライブラリである。 +
+link:https://projectlombok.org/[Project Lombok]からjarファイルをダウンロードしたのち、``java -jar <<jarファイルまでのパス>>``を実行し、以下の画面を表示させる。 +
+
+.Lombokインストール
+[#Lombok]
+image::WebApp_Impl/lombok.png[Lombokインストール]
+
+**Specify Location**を選択し、ウィンドウに利用しているSTSの情報が表示されたら**Install/Update**をクリックすればよい。 +
+
+NOTE: ボイラープレートコードとは言語の仕様上省略することはできないが、ロジックを含まず定型的なコードの事である。具体的にはgetterやsetterと呼ばれるようなメソッドであり、実装する上で冗長なコードであるため省くのが望ましい。
+
+[[WebAppImpl_Coding]]
+== コーディング
+ついにコーディングを行いアプリケーションを実装する状態にすることができたが、Javaでアプリケーションを作成する上で実装する前にある程度クラスをどのように作成するか/どのようなクラス間の連携を行うかを考慮する必要がある。 +
+
+
+[[WebAppImpl_Coding_Archi]]
+=== 全体のアーキテクチャ
+
+設計の考え方としては様々な理論があるが、今回はアプリケーション全体を以下のように分割して実装するクラスを当てはめる。 +
+
+.全体アーキテクチャ
+[#Architecture]
+image::WebApp_Impl/Architecture.png[全体アーキテクチャ]
+
+* アプリケーション層 : コントローラなど実際にHTTPリクエストを受けて処理を開始する部分
+* ドメイン層 : 各種ビジネスロジックを実装する
+* インフラストラクチャ層 : DBなどの外部システムとの連携やデータ保持を行う。
+
+具体的な説明及びコーディングは後述する。 +
+なお、今回はDBを利用しないため、インフラストラクチャ層は直接Todoの情報を保持する。 +
+実装を行う上でどこから手を付けるかはその状況次第ではあるが、インフラストラクチャ層もしくはアプリケーション層に相当するエンドポイント部分から行った方が良い。 +
+今回はインフラストラクチャ層から実装する。
+
+=== インフラストラクチャ層
+
+=== ドメイン層
+
+=== アプリケーション層
+
+=== その他
+
+
+[[WebAppImpl_Testing]]
+== 単体テスト
+
+[[WebAppImpl_LocatExe]]
+== ローカルでの動作確認
