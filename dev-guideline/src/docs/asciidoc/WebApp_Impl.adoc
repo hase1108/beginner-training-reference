@@ -133,7 +133,7 @@ CSVファイルを取得するが、認証情報はそのCSVファイルに記�
 * SpringBoot : 2.2.*
 * Group : com.example.demo
 * Artifact : todo
-* Name : TodoApp
+* Name : todo
 * Java : 11
 * Dependencies : Lombok, Spring Web 
 
@@ -177,21 +177,431 @@ image::WebApp_Impl/Architecture.png[全体アーキテクチャ]
 * インフラストラクチャ層 : DBなどの外部システムとの連携やデータ保持を行う。
 
 具体的な説明及びコーディングは後述する。 +
-なお、今回はDBを利用しないため、インフラストラクチャ層は直接Todoの情報を保持する。 +
+なお、今回はDBを利用せず、クラス内に直接タスクを保持するため、インフラストラクチャ層とドメイン層の境界が曖昧になるため、ドメイン層とインフラストラクチャ層をほぼ同一のものとみなして実装する。 +
+
 実装を行う上でどこから手を付けるかはその状況次第ではあるが、インフラストラクチャ層もしくはアプリケーション層に相当するエンドポイント部分から行った方が良い。 +
-今回はインフラストラクチャ層から実装する。
+今回は前述の通り、インフラストラクチャ層とドメイン層がほぼ同一のためドメイン層から実装する。 +
 
-=== インフラストラクチャ層
+最終的なパッケージの構成は以下のようになる。 +
 
+.パッケージ構成
+[#Package]
+image::WebApp_Impl/Package.png[パッケージ構成]
+
+[[WebAppImpl_Coding_Domain]]
 === ドメイン層
 
+[[WebAppImpl_Coding_Domain]]
+==== Todoオブジェクト
+まずは、今回Todoアプリで取り扱う対象であるタスクを表現するオブジェクトのクラスを作成する。 +
+Todoオブジェクトは、事前の設計のように以下の情報を保有する。 
+
+- タスクID
+- タスクタイトル
+- 完了/未完了
+
+以下にTodoクラスを示す。 +
+
+[source,java]
+.Todo.java
+----
+
+@Data
+public class Todo {
+
+	private String taskId;
+	
+	@NotBlank
+	@Size(min = 1, max = 30)  //(1)
+	private String taskTitle;
+	
+	private boolean isFinished = false;  //(2)
+}
+
+----
+
+.Todoオブジェクト
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|Todoオブジェクトのタイトルが必ず付与されていること、及び最大で30文字までという制限を行う為アノテーションを付与する。
+
+|2
+|完了/未完了はデフォルトの状態では未完了であるためfalseを初期値として設定する。
+|===
+
+[[WebAppImpl_Coding_TodoRepository]]
+==== TodoRepository
+
+続いて、実際にTodoオブジェクトを保持し、外部からの要求に従って操作を行う``TodoRepository``を実装していく。 +
+TodoRepositoryはinterfaceを先に定義し、それを実装する形式にする。 +
+今回はTodoオブジェクトをアプリケーション内に保持するが、このようにinterfaceに対して実装を行うことで、実装クラスを差し替えることで他のクラスに対して変更の影響を減らすことができるようになる。 +
+
+[[WebAppImpl_Coding_TodoRepository_interface]]
+===== TodoRepository(Interface)
+
+InterfaceであるTodoReositoryを以下に示す。
+
+[source,java]
+.TodoRepository.java
+----
+public interface TodoRepository {
+
+	public Optional<Todo> getTodo(String taskId);
+	
+	public Collection<Todo> getTodos();
+	
+	public void createTodo(Todo todo);
+	
+	public void deleteTodo(String taskId);
+	
+	public void finishTodo(Todo todo);
+	
+	public int countTodo(boolean isFinished);
+}
+----
+
+このように、interfaceは外部クラスが利用可能なメソッドを示すことを目的として定義することが多い。 +
+外部クラスがこのinterfaceを実装したクラスを利用する際はこのメソッドを実行すればよく、内部の実装方式は考慮しない。
+
+[[WebAppImpl_Coding_TodoRepository_interface]]
+===== TodoRepositoryImpl
+
+``TodoRepository``を実装したクラスを以下に示す。
+
+[source,java]
+.TodoRepositoryImpl
+----
+@Repository  //(1)
+public class TodoRepositoryImpl implements TodoRepository /*(2)*/{
+	
+	private static final Map<String, Todo> TODOMAP = new ConcurrentHashMap<>();  //(3)
+
+	@Override
+	public Optional<Todo> getTodo(String taskId) {
+		
+		return Optional.ofNullable(TODOMAP.get(taskId));
+	}
+
+	@Override
+	public Collection<Todo> getTodos() {
+		return TODOMAP.values();
+	}
+
+	@Override
+	public void createTodo(Todo todo) {
+		TODOMAP.put(todo.getTaskId(), todo);
+	}
+
+	@Override
+	public void deleteTodo(String taskId) {
+		TODOMAP.remove(taskId);
+	}
+
+	@Override
+	public void finishTodo(Todo todo) {
+		TODOMAP.replace(todo.getTaskId(), todo);
+	}
+
+	@Override
+	public int countTodo(boolean isFinished) {
+		int count = 0;
+		for(Todo todo : TODOMAP.values()) {
+			if(isFinished == todo.isFinished()) {
+				count ++;
+			}
+		}
+		return count;
+	}
+
+}
+
+----
+
+.TodoRepositoryImpl
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|SpringのDIコンテナにTodoRepositoryImplを登録するためにアノテーションを付与する。
+
+|2
+|TodoRepositoryを実装することを宣言する。
+
+|3
+|TodoオブジェクトはMapとしてクラス内に保持する。
+|===
+
+[[WebAppImpl_Coding_TodoService]]
+==== TodoService
+
+次にServiceクラスを実装する。 +
+Serviceクラスはビジネスロジックを表現するクラスであるため、今回であれば**未完了タスクは最大で5個までしか登録できない**などを表現する。 +
+このServiceクラスもinterfaceを定義し、それに対して実装クラスを作成する。
+
+[[WebAppImpl_Coding_TodoService_Interface]]
+===== TodoService(Interface)
+
+InterfaceであるTodoServiceを以下に示す。 +
+
+[source,java]
+.TodoService.java
+----
+public interface TodoService {
+	
+	public Collection<Todo> getTodos();
+	
+	public Todo getTodo(String taskId);
+	
+	public Todo createTodo(String taskTitle);
+	
+	public void finishTodo(String taskId);
+	
+	public void delete(String taskId);
+
+}
+----
+
+[[WebAppImpl_Coding_TodoService]]
+===== TodoServiceImpl
+
+``TodoService``の実装クラスを以下に示す。 +
+
+[source,java]
+.TodoServiceImpl.java
+----
+@Service  //(1)
+public class TodoServiceImpl implements TodoService {
+	
+	private static final int MAX_TASK = 5;
+	
+	@Autowired  //(2)
+	TodoRepository todoRepository;
+
+	@Override
+	public Collection<Todo> getTodos() {
+		return todoRepository.getTodos();
+	}
+
+	@Override
+	public Todo getTodo(String taskId) {
+		
+		Optional<Todo> todo = todoRepository.getTodo(taskId);
+		
+		return todo.orElseThrow(() -> new ResourceNotFoundException("Task does't exist. TaskId : " + taskId));  //(2)
+	}
+
+	@Override
+	public Todo createTodo(String taskTitle) {
+		if(todoRepository.countTodo(false) >= MAX_TASK) {
+			throw new BusinessException("Unfinished task must not over " + MAX_TASK);  //(3)
+		}
+		Todo todo = new Todo();
+		String taskId = UUID.randomUUID().toString();
+		todo.setTaskId(taskId);
+		todo.setTaskTitle(taskTitle);
+		todoRepository.createTodo(todo);
+		
+		return getTodo(taskId);
+	}
+
+	@Override
+	public void finishTodo(String taskId) {
+		Todo todo = getTodo(taskId);
+		
+		if(todo.isFinished()) {
+			throw new BusinessException("Task has already been completed. TaskId :" + taskId);  //(4)
+		}
+		
+		todo.setFinished(true);
+		todoRepository.finishTodo(todo);
+	}
+
+	@Override
+	public void delete(String taskId) {
+		getTodo(taskId);
+		todoRepository.deleteTodo(taskId);
+	}
+
+
+}
+
+----
+
+.TodoServiceImpl
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|SpringのDIコンテナにTodoServiceImplを登録するためにアノテーションを付与する。
+
+|2
+|DIコンテナに登録されているTodoRepositoryを利用するため、Autowiredアノテーションを付与する。
+
+|3
+|TaskIDで指定したタスクが存在しなければ例外を送出する。 +
+例外クラスに関しては後述する。
+
+|4
+|未完了タスクが5つ以上存在した場合は例外を送出する。 +
+例外クラスに関しては後述する。
+
+
+|5
+|タスクが既に完了済みであれば例外を送出する。 +
+例外クラスに関しては後述する。
+|===
+
+例外クラスは以下のように実装する。 +
+なお、本来は必要な要件に従ってもう少し複雑な例外クラスを設計することが多い。 +
+
+[source,java]
+.BusinessException.java
+----
+@ResponseStatus(HttpStatus.BAD_REQUEST)  //(1)
+public class BusinessException extends RuntimeException /*(2)*/{
+	
+	private static final long serialVersionUID = 1L;
+
+	public BusinessException(String message) /*(3)*/{
+		super(message);
+	}
+
+}
+----
+
+.TodoServiceImpl
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|この例外が送出された場合にユーザに対してどのレスポンスステータスを返すかを指定する。
+
+|2
+|非検査例外であるためRuntimeExceptionを継承する。
+
+|3
+|例外クラスにmessageを設定することで、例外発生時にアプリケーションユーザにメッセージを返却することができる。
+|===
+
+
+[source,java]
+.ResourceNotFoundException
+----
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
+
+	public ResourceNotFoundException(String message) {
+		super(message);
+	}
+}
+
+----
+
+[[WebAppImpl_Coding_Application]]
 === アプリケーション層
+アプリケーション層では、実際にリクエストを受け付ける``Controllerクラス``の実装を行う。 +
+画面を伴うアプリケーションであれば、Controller以外にもViewに関する実装を行ったり、例外のハンドラメソッドなどを追加することもある。
 
-=== その他
+
+[[WebAppImpl_Coding_Application_Controller]]
+==== TodoController
+
+Controllerクラスの実装を以下に示す。
+
+[source,java]
+.TodoController.java
+----
+@RestController //(1)
+@RequestMapping("todos")  //(2)
+public class TodoController {
+	
+	@Autowired
+	TodoService todoService;  //(3)
+	
+	@GetMapping  //(4)
+	public Collection<Todo> getTodos(){
+		return todoService.getTodos();
+	}
+	
+	@GetMapping("{taskId}")  //(5)
+	public Todo getTodo(@PathVariable("taskId") String taskId) {
+		return todoService.getTodo(taskId);
+	}
+	
+	@PostMapping //(6)
+	@ResponseStatus(HttpStatus.CREATED)  //(7)
+	public Todo createTodo(@RequestBody /*(8)*/ @Validated /*(9)*/Todo todo) {
+		return todoService.createTodo(todo.getTaskTitle());
+	}
+	
+	@PutMapping("{taskId}") //(10)
+	public void finishTodo(@PathVariable("taskId") String taskId) {
+		todoService.finishTodo(taskId);
+	}
+	
+	@DeleteMapping("{taskId}") //(11)
+	public void deleteTodo(@PathVariable("taskId") String taskId) {
+		todoService.delete(taskId);
+	}
+
+}
+
+----
+
+.TodoController
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|RestControllerであることを示すためにアノテーションを付与する。
+
+|2
+|TodoControllerに対応するパスを指定する。 +
+``/todos``のパスはこのControllerが対応することになる。
 
 
-[[WebAppImpl_Testing]]
-== 単体テスト
+|3
+|DIコンテナに登録されているTodoServiceを利用するため、Autowiredアノテーションを付与する。
+
+|4
+|GETメソッドでリクエストが来た際にマッピングされるメソッドを示す。
+
+
+|5
+|``/todos/<<taskID>>``のようにGETメソッドでリクエストが来た際に対応するメソッド。 +
+taskIDは引数として受け取ることができる。
+
+|6
+|POSTメソッドに対応することを示す。
+
+|7
+|POSTメソッドでリクエストで送信されたjsonを引数で受け取ることを示すアノテーション
+
+|8
+|Todoオブジェクトの``@Size``や``@NotBlank``アノテーションを有効にする
+
+|9
+|PUTメソッドに対応することを示す。
+
+|10
+|DELETEメソッドに対応することを示す。
+|===
+
+クラスの実装が終了したら、``git add```コマンドや``git commit``、``git push``コマンドでリモートリポジトリに変更を保存する。 +
 
 [[WebAppImpl_LocatExe]]
 == ローカルでの動作確認

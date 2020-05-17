@@ -159,7 +159,7 @@ Webアプリケーションではlink:https://app.diagrams.net/[draw.io]など�
 |/todos
 |POST
 |taskTitle:String
-|taskId:int +
+|taskId:String +
 taskTitle:String +
 isFinished:boolean
 
@@ -167,7 +167,7 @@ isFinished:boolean
 |/todos/{id}
 |GET
 |-
-|taskId:int +
+|taskId:String +
 taskTitle:String +
 isFinished:boolean
 
@@ -175,7 +175,7 @@ isFinished:boolean
 |/todos
 |GET
 |-
-|taskId:int +
+|taskId:String +
 taskTitle:String +
 isFinished:boolean
 
