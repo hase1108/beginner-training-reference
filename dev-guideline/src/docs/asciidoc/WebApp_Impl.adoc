@@ -603,5 +603,57 @@ taskIDは引数として受け取ることができる。
 
 クラスの実装が終了したら、``git add```コマンドや``git commit``、``git push``コマンドでリモートリポジトリに変更を保存する。 +
 
-[[WebAppImpl_LocatExe]]
+[[WebAppImpl_LocalExe]]
 == ローカルでの動作確認
+作成したプログラムに関して、ローカル環境で簡単に動作を確認する。 +
+SpringBootでは、``組み込みTomcat``という仕組みがあり、Webサーバなどを用意しなくても簡易的にWebアプリケーションを動作させることができる。 +
+
+IDEからアプリケーションを右クリックし、``Run as``⇒``Spring Boot App``を実行する。 +
+起動が成功すれば、IDEのコンソール上に``Started TodoApplication in 0.819 seconds (JVM running for 1.247)``などの文字列が表示される。 +
+
+[[WebAppImpl_LocalExe_Rest]]
+=== RESTクライアントによる動作確認
+前述したように起動が成功していれば、起動しているコンピュータ自身を表すIPアドレスである``127.0.0.1``かつポート番号``8080``でHTTPリクエストを受け付けている。 +
+そこで簡単に動作を確認するために**RESTクライアント**を用いてリクエストを送ってみる。 +
+
+RESTクライアントは様々な種類が存在する。一例を以下に示す。
+
+- curl : Linuxシェルなどで動作させることができるコマンドラインアプリ
+- Postman : RESTクライアント/サーバ機能を持つアプリケーション
+- Telend API Tester : GoogleChromeのplugin
+
+今回はTelend API Testerを用いる。 +
+Telend API Testerの画面を以下に示す。 +
+
+.Telend API Tester
+[#RESTClient]
+image::WebApp_Impl/RESTClient.png[Telend API Tester]
+
+.Telend API Tester画面の説明説明
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|リクエストを行うメソッドを指定する。
+
+|2
+|リクエストを行うパスを指定する。 +
+
+|3
+|POSTメソッドなどで何らかのデータを送付する際にJSON形式などでデータを記述する。
+|===
+
+とりあえず、タスクを登録して表示させてみる。 +
+登録する際はPOSTメソッドで以下のRequestBodyを送信する。 +
+
+[source,json]
+----
+{
+  "taskTitle":"task"
+}
+----
+
+タスクが正しく登録されれば、画面下部のResponse部分にタスクIDなどの情報が表示される。 +
+続いて、GETメソッドを``/todos/{taskID}``パスに対してリクエストしたら登録したタスクが表示できることを確認する。
