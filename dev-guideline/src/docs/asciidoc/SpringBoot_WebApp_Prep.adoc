@@ -158,25 +158,25 @@ Webアプリケーションではlink:https://app.diagrams.net/[draw.io]など�
 |タスク投稿
 |/todos
 |POST
-|task:String
-|task_id:int +
-task:String +
+|taskTitle:String
+|taskId:String +
+taskTitle:String +
 isFinished:boolean
 
 |タスク取得
 |/todos/{id}
 |GET
 |-
-|task_id:int +
-task:String +
+|taskId:String +
+taskTitle:String +
 isFinished:boolean
 
 |タスクリスト取得
 |/todos
 |GET
 |-
-|task_id:int +
-task:String +
+|taskId:String +
+taskTitle:String +
 isFinished:boolean
 
 |タスク削除
