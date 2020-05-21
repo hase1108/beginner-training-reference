@@ -1,0 +1,408 @@
+include::include_all.adoc[]
+
+:toclevels: 5
+:sectnums:
+
+[DeployWebApp]
+= アプリケーションのデプロイ
+
+[[DeployWebApp_Overview]]
+== Overview
+<<WebApp_Impl.adoc#WebAppImpl_Overview,前章>>で簡単なTodoアプリケーションを作成した。 +
+本章では、作成したアプリケーションを実際にAWSのEC2サーバにデプロイし、Webアプリケーションとして実行できることを確認していく。 +
+なお、本章では色々なAWSサービスを使用するが、CodeCommitと異なり、料金がかかるサービスがいくつかあるため気を付けること。 +
+特にEC2サーバは、起動時間で課金されるため、使用していない場合はインスタンスを停止することをおすすめする。 +
+
+[[DeployWebApp_AppConfig]]
+== デプロイ方式
+通常、アプリケーションを利用可能状態にすることをデプロイと呼ぶ。 +
+デプロイ方式としては、人力でアプリケーションファイルなどを配置、設定する方法や、各種サービスを利用した**CD(Continuous deployment)**などの様々な方式が存在する。 +
+今回は、リモートリポジトリとして``Code Commit``を利用していること、またデプロイ先がEC2インスタンスであることから、AWSサービスである``Code Build``及び``Code Deploy``を利用してデプロイまで行う。 +
+今回構築するシステムの概要図は以下のようになる。 +
+
+.デプロイ方式
+[#Deploy]
+image::Deploy/DeployConfig.png[デプロイ方式]
+
+CodeBuildはその名の通りコードをビルドし、その成果物はS3に保存することとする。 +
+CodeDeployはS3の成果物をEC2インスタンスに配置し、起動処理まで行うこととする。 +
+なお、AWSのサービスでは、``Code Pipeline``と呼ばれる一連の流れを何らかのアクションをキーに自動的に実行するサービスが存在するが、今回は利用しない。
+
+[[DeployWebApp_DeployPrep]]
+== ビルド
+
+まずは、作成したソースコードをビルドし、実行可能なjarファイル及びデプロイに必要なファイル類を纏めたzipファイルを作成し、S3に保存するようにする。 +
+
+[[DeployWebApp_DeployPrep_CodeBuild_S3]]
+=== S3バケットの作成
+**S3(Simple Storage Service)**はAmazonのストレージサービスで、大量のデータを安価に保存することができるサービスである。 +
+詳細は省くが、S3内でデータを保存する場所をS3バケットと呼称する。 +
+S3の詳しい説明は省く。 +
+
+S3バケットの作成方法は非常に簡単で、マネジメントコンソールからS3にアクセスしたのち、適当な名前をつけて**バケット作成**をクリックするだけでよい。 +
+S3バケットの名称は大文字およびスペースが不可であり、リージョン内で一意である必要がある。 +
+今回は``springboot.webapp.todo.test``という名称で作成した。 +
+
+また、コンフィグタグからバージョニングを有効にする。 +
+バージョニングを有効することにより、ビルドをする度にそれぞれの成果物をバージョン付けして管理することができるようになる。 +
+
+[[DeployWebApp_DeployPrep_CodeBuild]]
+=== CodeBuildの設定
+続いてこのステップの核となるCodeBuildの設定を行う。 +
+CodeBuildeの各種設定はビルドする対象や保存先、ビルド環境を設定する**ビルドプロジェクト**とビルドの詳細なステップを記述する**buildspec.yml**ファイルにより成立する。 +
+まずはビルドプロジェクトを作成する。 +
+
+[[DeployWebApp_DeployPrep_CodeBuild_BuildProject]]
+==== ビルドプロジェクトの作成
+ビルドプロジェクトはマネジメントコンソールより設定する。 +
+マネジメントコンソールからサービスの**CodeBuild**を選択する。 +
+その後**ビルドプロジェクトを作成する**から以下の設定を行う。 +
+
+[[DeployWebApp_BuildProject]]
+.ビルドプロジェクトの設定
+[cols="30,70", options="header"]
+|===
+|設定名
+|設定
+
+|プロジェクト名
+|任意
+
+|ソースプロバイダ
+|AWS CodeCommit
+
+|リポジトリ
+|ソースコードを保存しているリポジトリ
+
+|環境イメージ
+|マネージド型イメージ
+
+|OS
+|Amazon Linux2
+
+|サービスロール
+|新しいサービスロール
+
+|ロール名
+|任意
+
+|ビルド仕様
+|buildspecファイルを使用する
+
+|アーティファクト/タイプ
+|Amazon S3
+
+|バケット名
+|<<DeployWebApp_DeployPrep_CodeBuild_S3,S3バケットの作成>>で作成したバケット
+
+|アーティファクトのパッケージ化
+|Zip
+
+|名前
+|任意
+|===
+
+以上の設定を行い、ビルドプロジェクトを作成することでCodeBuildのページに以下のようにビルドプロジェクトが作成する。 +
+
+.CodeBuildの画面
+[#BuildProject]
+image::Deploy/BuildProject.png[CodeBuildの画面]
+
+[[DeployWebApp_DeployPrep_CodeBuild_BuildSpec]]
+=== buildspec.ymlの作成
+buildspec.ymlファイルでは、主に記述された内容に従ってビルド及びビルドの前後にスクリプトを実行したり、ビルド環境を設定することができる。 +
+詳しい仕様についてはlink:https://docs.aws.amazon.com/ja_jp/codebuild/latest/userguide/build-spec-ref.html[公式リファレンス]を参照すること。 +
+今回作成するbuildspec.ymlは最低限以下の用に記述する。 +
+
+[source,yml]
+.buildspec.yml
+----
+version: 0.2
+ 
+phases:
+  install:
+    runtime-versions:
+      java: corretto11  //(1)
+  pre_build:
+    commands:
+      - echo Nothing to do in this phase
+  build:
+    commands:
+      - echo Build started on `date`
+      - mvn package -f todo/pom.xml  //(2)
+  post_build:
+    commands:
+      - echo Nothing to do in this phase
+artifacts:
+  files:
+    - todo/target/todo-0.0.1-SNAPSHOT.jar  //(3)
+    - appspec.yml //(4)
+    - startapp.sh //(5)
+  discard-paths: yes
+----
+
+[[DeployWebApp_BuildSpec]]
+.buildspec.ymlの設定
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|今回はjdk11環境下でビルドを行うため、corretto11を指定する
+
+|2
+|ビルド時に実行するコマンド
+
+|3
+|S3バケットに保存されるファイルのうち、今回のメインとなるjarファイルを指定する。
+
+|4
+|S3バケットに保存されるファイルのうち、次のステップであるデプロイに必要なymlファイル。 +
+この時点ではbuildspec.ymlファイルと同じディレクトリにファイルだけ作成して保存するだけでよい。
+
+|5
+|S3バケットに保存されるファイルのうち、次のステップであるデプロイに必要なシェルスクリプト。
+|===
+
+なお、buildspec.yml自体はビルド対象のルートディレクトリに保存する必要がある。 +
+buildspec.ymlを作成したらcodecommitにpushしておくこと。 +
+
+[[DeployWebApp_DeployPrep_CodeBuild_Build]]
+=== ビルド実行
+各種設定を終了したのち、CodeBuildのページより対象のビルドプロジェクトを選択肢、ビルドの開始を押下する。 +
+一番最初のビルドは時間がかかるが、ステータスが成功になれば終了である。 +
+S3のバケットにjarファイルを含めたディレクトリが生成されていれば問題ない。 +
+
+[[DeployWebApp_DeployPrep_Deploy]]
+== デプロイ
+続いて、ビルドした成果物をEC2インスタンスにデプロイし、同時にアプリケーションを起動する。 +
+
+[[DeployWebApp_DeployPrep_Deploy_EC2]]
+=== EC2インスタンスの準備
+まず初めにデプロイ先であるEC2インスタンスの準備を行う。 +
+なお、今回作成するEC2インスタンスはセキュリティなどの面からあまり適当ではないため気をつけること。 +
+
+EC2インスタンスに必要な条件を以下に示す。 +
+
+- corretto11がインストールされている
+- CodeDeployにアクセス可能なIAMロールが付与されている
+- CodeDeployエージェントが利用可能である
+
+この中でCodeDeployエージェントは、CodeDeployサービスと適宜通信を行い、デプロイ可能にする為に必要になる。 +
+EC2インスタンスの作成はマネジメントコンソールからインスタンスの作成を選択して行う。 +
+設定を以下に示す。 +
+
+[[DeployWebApp_EC2]]
+.EC2の設定
+[cols="30,90", options="header"]
+|===
+|AMI
+|Amazon Linux2 AMI(64bit)
+
+|インスタンスタイプ
+|t2.micro
+
+|IAMロール
+|AmazonEC2RoleforAWSCodeDeployが付与されたロール(ロールが存在しなければ作成する)
+
+|ユーザデータ
+|後述
+
+|タグ
+|key:Name, Value:任意
+
+|セキュリティグループ
+|タイプ:カスタムTCP, ポート:8080
+|===
+
+なお、作成時にEC2サーバにSSHでアクセスするためのキーペアを作成する必要があるため、作成しダウンロードしておく。 +
+作成したEC2サーバにアクセスする際はダウンロードしたキーペアを利用すること。 +
+なおアクセスする際は以下のコマンドを実行すれば良い。 +
+
+```
+ssh -i <<キーペアファイル>> ec2-user@{public DNS}
+```
+なお今回の設定方法ではパブリックDNSは起動毎に変更されるので注意すること。 +
+
+ユーザデータはEC2インスタンスの初回起動時に実行するスクリプトであり、今回は以下のスクリプトを実行するように記述する。 +
+
+[source,bash]
+.userdata
+----
+#!/bin/bash
+sudo yum -y update
+sudo yum install -y ruby
+ 
+# install CodeDeploy Agent
+sudo yum install wget
+cd /home/ec2-user
+wget https://aws-codedeploy-ap-northeast-1.s3.ap-northeast-1.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+
+# install jdk
+sudo yum install -y java-11-amazon-corretto
+----
+これでJDKとCodeDeployエージェントのインストールが行われる。 +
+なお、ユーザデータからでなく、EC2インスタンス起動後にSSHでログインして同様のスクリプトを直接実行しても問題はない。 +
+
+[[DeployWebApp_DeployPrep_Deploy_AppSpec]]
+=== appspec.yml及びスクリプト
+続いてデプロイに必要なスクリプト及び``appspec.yml``の準備を行う。 +
+appspec.ymlはCodeBuildのbuildspec.ymlと同様に、デプロイの設定や各段階で行うスクリプトなどの情報を記述することができる。 +
+appspec.ymlを以下に示す。
+
+[source,yml]
+.appspec.yml
+----
+version: 0.0
+os: linux  //(1)
+files:
+  - source: / //(2)
+    destination: /var/todo/  //(3)
+hooks:  //(4)
+  ApplicationStart:  //(5)
+    - location: startapp.sh  //(6)
+      timeout: 300
+----
+
+[[DeployWebApp_AppSpec]]
+.appspec.ymlの設定
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|デプロイ先のEC2インスタンスのOSの種類を示す。 +
+今回はAmazon Linux2のためLinuxを指定する。
+
+|2
+|デプロイ時に対象インスタンスに展開する対象物を指定する。 +
+今回はルートディレクトリを示しているので、対象となるzipファイルの中身すべてを対象とする。
+
+|3
+|(2)で指定したファイル類をEC2インスタンスのどのディレクトリに展開するかを指定する。
+
+|4
+|CodeDeployでは、デプロイ時にいくつかのステップに分けられて管理されている。 +
+そのステップごとに行いたい処理を指定することができる。 +
+具体的なステップに関してはlink:https://docs.aws.amazon.com/ja_jp/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html[公式リファレンス]を参照すること。
+
+|5
+|アプリケーション起動時に行いたい処理を記述できる。
+
+|6
+|アプリケーション実行時に後述するstartapp.shを実行するように設定する。
+|===
+
+appspec.ymlはbuildspec.ymlと同様に、ルートディレクトリに配置する。 +
+
+続いてappspec.ymlで記述したstartspp.shに関して以下に示す。 +
+
+[source,sh]
+.startapp.sh
+----
+#!/bin/sh
+java -jar /var/todo/todo-0.0.1-SNAPSHOT.jar &>/dev/null & //(1)
+----
+
+[[DeployWebApp_StartApp]]
+.startapp.shの解説
+[cols="10,90", options="header"]
+|===
+|項番
+|概要
+
+|1
+|今回は実行可能jarを起動するため``java -jar``コマンドにより実行する。 +
+&>/dev/null &に関しては、標準出力が存在するとデプロイが失敗するため捨てるようにしている。 +
+必要な場合はログなどに出力する。
+|===
+
+このstartapp.shもルートディレクトリに配置しておく。
+
+[[DeployWebApp_DeployPrep_Deploy_IAM]]
+=== IAMロールの作成
+CodeDeployの設定を行う前にCodeDeployで利用するIAMロールを作成しておく。 +
+IAMロールは**AWSCodeDeployRole**のポリシーを付与して任意の名前を付与しておく。
+
+[[DeployWebApp_DeployPrep_Deploy_CodeDeploy]]
+=== CodeDeployの設定
+最後にCodeDeployの設定を行う。 +
+CodeDeployはマネジメントコンソールより操作を行う。 +
+まずは**アプリケーションの作成**を選択し、以下を設定する。
+
+[[DeployWebApp_CodeDeployApp]]
+.アプリケーションの作成
+[cols="30,70", options="header"]
+|===
+|名称
+|設定
+
+|アプリケーション名
+|任意
+
+|コンピューティングプラットフォーム
+|EC2/オンプレミス
+|===
+
+アプリケーションを作成後、**デプロイグループ**を以下のように設定する。 +
+[[DeployWebApp_CodeDeployGroup]]
+.デプロイグループ
+[cols="30,70", options="header"]
+|===
+|名称
+|設定
+
+|デプロイグループ名
+|任意
+
+|サービスロール
+|<<DeployWebApp_DeployPrep_Deploy_IAM,IAMロールの作成>>で作成したロールを付与する。
+
+|デプロイタイプ
+|インプレース
+
+|環境設定
+|Amazon EC2インスタンス
+
+|タググループ
+|デプロイ先のEC2に設定したキーと値を記述
+
+|ロードバランシングを有効にする
+|チェックをはずす
+|===
+
+最後にCodeDeployで作成したアプリケーションを選択肢、**アプリケーションをデプロイする**を選択し、以下の設定を行う。
+
+[[DeployWebApp_CodeDeployCondifg]]
+.デプロイ設定
+[cols="30,70", options="header"]
+|===
+|名称
+|設定
+
+|デプロイグループ
+|作成したデプロイグループ
+
+|リビジョンタイプ
+|S3
+
+|リビジョンの場所
+|CodeBuildの成果物を保存しているS3バケットのURL
+
+|リビジョンファイルの種類
+|zip
+|===
+
+そして**デプロイの作成**を選択するとデプロイが開始されるが、その前にデプロイ先のEC2インスタンスを起動しておくこと。 +
+デプロイのステータスが**成功**になればデプロイが成功したことになる。 +
+
+[[DeployWebApp_DeployPrep_StartCnfirm]]
+== 起動確認
+最後にデプロイされたアプリケーションが実際に動作しているかを確認する。 +
+動作確認には今回も**Telend API Tester**を用いる。 +
+接続先はマネジメントコンソールよりEC2インスタンスのパブリックDNSもしくはパブリックIPを取得し、ポート番号は**8080**を指定すればよい。 +
+確認方式に関しては<<WebApp_Impl.adoc#WebAppImpl_LocalExe_Rest,RESTクライアントによる動作確認>>を参照すること。
